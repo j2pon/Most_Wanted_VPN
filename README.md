@@ -58,8 +58,12 @@ Klasik Most Wanted hikayesinde, Rockport sokaklarının çaylağı Clarence "Raz
 Başlatıcı menüsünden şu işlemleri tek tuşla gerçekleştirebilirsiniz:
 - **`[1]` Oyunu Başlat:** Doğrudan oyunu açar.
 - **`[2]` Grafik Modunu Değiştir:** DXVK Vulkan ⚡ ile Native DirectX 9 (Discord Uyumlu) 🎮 arasında anında geçiş yapar.
-- **`[3]` Hikaye ve Kısayol Rehberini Aç:** Detaylı rehberi görüntüler.
-- **`[4]` Çıkış**
+- **`[3]` Tüm Saveleri Eşitle ve Geri Getir:** Tüm profilleri (`MuratVPN`, `VPN`, `VPN_Kopru`) otomatik onarır ve eşitler.
+- **`[4]` Kaze (#7) Profilini Yükle:** Blacklist #7 Kaze seviyesindeki hazır profili yükler.
+- **`[5]` Başlangıç Profilini Yükle:** Blacklist #15 Razor & BMW M3 GTR başlangıç profilini yükler.
+- **`[6]` Final Köprü Kaçışı Profilini Yükle:** Blacklist #1 zaferi sonrası tarihi köprü atlayışı profilini yükler.
+- **`[7]` Hikaye ve Kısayol Rehberini Aç:** Detaylı hikaye ve kısayol rehberini görüntüler.
+- **`[8]` Çıkış**
 
 ---
 
