@@ -1,0 +1,50 @@
+# Need for Speed: Most Wanted - VPN Edition .gitignore
+
+# Base game heavy binary folders (Distributed via GitHub Releases / Download)
+CARS/
+CREDITS/
+FRONTEND/
+GLOBAL/
+LANGUAGES/
+MEMCARD/
+MOVIES/
+NIS/
+SOUND/
+SUBTITLES/
+TRACKS/
+
+# Base game executables and setup files (Included in full release archive)
+*.exe
+*.exe.*
+speed.exe.original
+00000000.256
+server.cfg
+server.dll
+
+# Log files
+*.log
+speed_d3d9.log
+
+# DXVK / Vulkan cache
+*.dxvk-cache
+speed.dxvk-cache
+
+# Backup, temporary and archive files
+*.bak
+*.bak_*
+*.tmp
+*.temp
+*.zip
+*.rar
+*.7z
+
+# Save files (Keep folder clean with .gitkeep)
+save/**/Otomatik_Yedekler/
+
+# OS generated files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.DS_Store
+._*
