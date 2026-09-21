@@ -1,4 +1,4 @@
-﻿# 🏎️ NEED FOR SPEED: MOST WANTED – VPN EDITION (PARALEL EVREN MODU)
+# 🏎️ NEED FOR SPEED: MOST WANTED – VPN EDITION (PARALEL EVREN MODU)
 
 <p align="center">
   <a href="https://github.com/j2pon/Most_Wanted_VPN/releases/latest">
@@ -23,7 +23,7 @@ Bu sürüm, **sıfır (temiz) kayıt alanı** ile gelir; böylece her oyuncu ken
 ## 📦 İndirme ve Hızlı Kurulum
 
 1. [**GitHub Releases (Sürümler)**](https://github.com/j2pon/Most_Wanted_VPN/releases/latest) sayfasına gidin.
-2. En güncel **`NFS_MW_VPN_Edition_v1.1.zip`** veya parçalı arşivleri (`part01` - `part04` & `Birlestir.bat`) indirin.
+2. En güncel **`NFS_MW_VPN_Edition_v1.2.zip`** veya parçalı arşivleri (`part01` - `part04` & `Birlestir.bat`) indirin.
 3. Arşivi dilediğiniz bir klasöre çıkartın.
 4. Klasördeki **`VPN_Mod_Baslatici.bat`** dosyasına çift tıklayarak oyunu başlatın!
 
