@@ -174,7 +174,7 @@ copy /y "save_kopru_final\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most W
 copy /y "save_kopru_final\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\VPN_Kopru\VPN_Kopru" >nul
 
 echo [+] Final Kopru Kacisi profili basariyla tum kayit konumlarina yuklendi!
-echo     - Blacklist #1 tamamlandi.
+echo     - Blacklist #1 Razor (Siyah Mustang GT) maglup edildi.
 echo     - Heat 5/6 kovalamacasi basladi! Eski kirik kopruye surun!
 echo.
 echo Menuye donmek icin bir tusa basin...
