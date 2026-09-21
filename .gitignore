@@ -5,6 +5,7 @@ CARS/
 CREDITS/
 FRONTEND/
 GLOBAL/*
+!GLOBAL/attributes.bin
 !GLOBAL/gameplay.bin
 !GLOBAL/GLOBALB.BUN
 !GLOBAL/GlobalB.lzc
