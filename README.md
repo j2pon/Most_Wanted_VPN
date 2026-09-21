@@ -23,7 +23,7 @@ Bu sürüm, **sıfır (temiz) kayıt alanı** ile gelir; böylece her oyuncu ken
 ## 📥 İndirme ve Hızlı Kurulum
 
 1. [**GitHub Releases (Sürümler)**](https://github.com/j2pon/Most_Wanted_VPN/releases/latest) sayfasına gidin.
-2. En güncel **`NFS_MW_VPN_Edition_v1.0.zip`** arşivini indirin.
+2. En güncel **`NFS_MW_VPN_Edition_v1.1.zip`** veya parçalı arşivleri (`part01` - `part04` & `Birlestir.bat`) indirin.
 3. Arşivi dilediğiniz bir klasöre çıkartın.
 4. Klasördeki **`VPN_Mod_Baslatici.bat`** dosyasına çift tıklayarak oyunu başlatın!
 
@@ -59,11 +59,10 @@ Başlatıcı menüsünden şu işlemleri tek tuşla gerçekleştirebilirsiniz:
 - **`[1]` Oyunu Başlat:** Doğrudan oyunu açar.
 - **`[2]` Grafik Modunu Değiştir:** DXVK Vulkan ⚡ ile Native DirectX 9 (Discord Uyumlu) 🎮 arasında anında geçiş yapar.
 - **`[3]` Tüm Saveleri Eşitle ve Geri Getir:** Tüm profilleri (`MuratVPN`, `VPN`, `VPN_Kopru`) otomatik onarır ve eşitler.
-- **`[4]` Kaze (#7) Profilini Yükle:** Blacklist #7 Kaze seviyesindeki hazır profili yükler.
-- **`[5]` Başlangıç Profilini Yükle:** Blacklist #15 Razor & BMW M3 GTR başlangıç profilini yükler.
-- **`[6]` Final Köprü Kaçışı Profilini Yükle:** Blacklist #1 zaferi sonrası tarihi köprü atlayışı profilini yükler.
-- **`[7]` Hikaye ve Kısayol Rehberini Aç:** Detaylı hikaye ve kısayol rehberini görüntüler.
-- **`[8]` Çıkış**
+- **`[4]` Başlangıç Profilini Yükle:** Blacklist #15 Razor & BMW M3 GTR başlangıç profilini yükler.
+- **`[5]` Final Köprü Kaçışı Profilini Yükle:** Blacklist #1 zaferi sonrası tarihi köprü atlayışı profilini yükler.
+- **`[6]` Hikaye ve Kısayol Rehberini Aç:** Detaylı hikaye ve kısayol rehberini görüntüler.
+- **`[7]` Çıkış**
 
 ---
 

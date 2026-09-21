@@ -30,26 +30,24 @@ echo --------------------------------------------------------------------
 echo  [1] Oyunu Başlat (speed.exe)
 echo  [2] Grafik Modunu Değiştir (DXVK Vulkan ^<--^> DirectX 9 / Discord)
 echo  [3] Tüm Saveleri Eşitle ve Geri Getir (MuratVPN, VPN, VPN_Kopru)
-echo  [4] Kaze (#7) Profilini Yükle (Baron Geçilmiş - Kaze Yarışları)
-echo  [5] Başlangıç Profilini Yükle (Razor #15 ^& BMW M3 GTR)
-echo  [6] Final Köprü Kaçışı Profilini Yükle (Blacklist #1 Zaferi)
-echo  [7] Hikaye ve Kısayol Rehberini Aç
-echo  [8] Çıkış
+echo  [4] Başlangıç Profilini Yükle (Razor #15 ^& BMW M3 GTR)
+echo  [5] Final Köprü Kaçışı Profilini Yükle (Blacklist #1 Zaferi)
+echo  [6] Hikaye ve Kısayol Rehberini Aç
+echo  [7] Çıkış
 echo --------------------------------------------------------------------
 echo.
-set /p SECIM="Lutfen bir secim yapin [1-8]: "
+set /p SECIM="Lutfen bir secim yapin [1-7]: "
 
 if "%SECIM%"=="1" goto BASLAT
 if "%SECIM%"=="2" goto GFX_TOGGLE
 if "%SECIM%"=="3" goto ESITLE_SAVELER
-if "%SECIM%"=="4" goto YUKLE_KAZE
-if "%SECIM%"=="5" goto YUKLE_BASLANGIC
-if "%SECIM%"=="6" goto YUKLE_FINAL
-if "%SECIM%"=="7" goto REHBER_AC
-if "%SECIM%"=="8" goto CIKIS
+if "%SECIM%"=="4" goto YUKLE_BASLANGIC
+if "%SECIM%"=="5" goto YUKLE_FINAL
+if "%SECIM%"=="6" goto REHBER_AC
+if "%SECIM%"=="7" goto CIKIS
 
 echo.
-echo [!] Gecersiz secim! Lutfen 1-8 arasinda bir tusa basin.
+echo [!] Gecersiz secim! Lutfen 1-7 arasinda bir tusa basin.
 timeout /t 2 >nul
 goto MENU
 
@@ -106,42 +104,6 @@ echo.
 call :OTO_SAVE_ONAR
 echo [+] MuratVPN, VPN ve VPN_Kopru profilleri hem 'save' klasorune
 echo     hem de 'Belgelerim\NFS Most Wanted' klasorune basariyla esitlendi!
-echo.
-echo Menuye donmek icin bir tusa basin...
-pause >nul
-goto MENU
-
-:YUKLE_KAZE
-cls
-echo ====================================================================
-echo  Kaze (#7) Save Profili Yukleniyor (Baron Gecilmis)...
-echo ====================================================================
-echo.
-if not exist "save_kaze\MuratVPN\MuratVPN" (
-    echo [HATA] save_kaze kayit dosyasi bulunamadi!
-    pause
-    goto MENU
-)
-
-:: Hedef klasörleri hazırla
-if not exist "save\NFS Most Wanted\MuratVPN" mkdir "save\NFS Most Wanted\MuratVPN"
-if not exist "save\NFS Most Wanted\VPN" mkdir "save\NFS Most Wanted\VPN"
-if not exist "save\MuratVPN" mkdir "save\MuratVPN"
-if not exist "save\VPN" mkdir "save\VPN"
-if not exist "%USERPROFILE%\Documents\NFS Most Wanted\MuratVPN" mkdir "%USERPROFILE%\Documents\NFS Most Wanted\MuratVPN"
-if not exist "%USERPROFILE%\Documents\NFS Most Wanted\VPN" mkdir "%USERPROFILE%\Documents\NFS Most Wanted\VPN"
-
-:: Kopyala
-copy /y "save_kaze\MuratVPN\MuratVPN" "save\NFS Most Wanted\MuratVPN\MuratVPN" >nul
-copy /y "save_kaze\MuratVPN\MuratVPN" "save\NFS Most Wanted\VPN\VPN" >nul
-copy /y "save_kaze\MuratVPN\MuratVPN" "save\MuratVPN\MuratVPN" >nul
-copy /y "save_kaze\MuratVPN\MuratVPN" "save\VPN\VPN" >nul
-copy /y "save_kaze\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\MuratVPN\MuratVPN" >nul
-copy /y "save_kaze\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\VPN\VPN" >nul
-
-echo [+] Kaze (#7) profili basariyla tum kayit konumlarina yuklendi!
-echo     - Blacklist #7 Kaze yarislari aktif.
-echo     - Garajda 8 arac ve $49,600 bakiye hazir!
 echo.
 echo Menuye donmek icin bir tusa basin...
 pause >nul
