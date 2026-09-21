@@ -27,6 +27,12 @@ Bu sürüm, **sıfır (temiz) kayıt alanı** ile gelir; böylece her oyuncu ken
 3. Arşivi dilediğiniz bir klasöre çıkartın.
 4. Klasördeki **`VPN_Mod_Baslatici.bat`** dosyasına çift tıklayarak oyunu başlatın!
 
+> [!TIP]
+> **Windows SmartScreen / "Akıllı Uygulama Denetimi" Uyarısı Alırsanız:**
+> Oyun 2005 yapımı modlu bir oyun olduğu ve `.bat` scriptleri internetten indirildiği için Windows koruma uyarısı verebilir:
+> - **Çözüm 1:** Çıkan uyarı penceresinde **"Ek Bilgi" (Daha fazla bilgi)** linkine tıklayıp **"Yine de Çalıştır"** butonuna basın.
+> - **Çözüm 2 (Kalıcı):** `VPN_Mod_Baslatici.bat` veya `Birlestir.bat` dosyasına **sağ tıklayın -> Özellikler** -> En alttaki **"Engellemeyi Kaldır" (Unblock)** kutucuğunu işaretleyip **Uygula / Tamam** deyin.
+
 ---
 
 ## 📖 1. Paralel Evren Hikayesi (Lore): "Sabotajın Çıktığı Gün"
