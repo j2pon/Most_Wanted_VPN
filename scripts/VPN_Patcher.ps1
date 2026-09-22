@@ -17,9 +17,6 @@ public class VPNMemoryPatcher {
     public static extern bool WriteProcessMemory(IntPtr hProcess, IntPtr lpAddress, byte[] lpBuffer, UIntPtr nSize, out IntPtr lpNumberOfBytesWritten);
 
     [DllImport("kernel32.dll", SetLastError = true)]
-    public static extern bool ReadProcessMemory(IntPtr hProcess, IntPtr lpAddress, [Out] byte[] lpBuffer, UIntPtr nSize, out IntPtr lpNumberOfBytesRead);
-
-    [DllImport("kernel32.dll", SetLastError = true)]
     public static extern bool CloseHandle(IntPtr hObject);
 
     public static bool Apply(int pid) {
@@ -42,36 +39,35 @@ public class VPNMemoryPatcher {
             // 2. Skip Cobalt SS BONUS_GT2 (16 NOPs at 0x5a39d1) -> ONLY Hero BMW M3 GTR in garage
             patch(0x5a39d1, new byte[] { 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90 });
 
-            // 3. Skip Prologue / Ambush (DDay) races -> Fall directly into Safehouse State 2 setup (0x5a3a47 -> NOP NOP)
+            // 3. Skip Prologue / Ambush (DDay) races (0x5a3a47 -> NOP je 0x5a3a7c) -> Enter Safehouse directly
             patch(0x5a3a47, new byte[] { 0x90, 0x90 });
 
-            // 4. Force Sonny #15 setup and clean jump to save initialization (calls 0x666fe0 / 0x6596e0 at 0x5a3b30, fixing autosave)
-            patch(0x5a3a66, new byte[] { 0xc6, 0x46, 0x08, 0x0f, 0xe9, 0xc1, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90 });
+            // 4. Ensure rival Sonny #15 is set (0x5a3a6c -> NOP je 0x5a3b4e)
+            patch(0x5a3a6c, new byte[] { 0x90, 0x90 });
 
-            // 5. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
+            // 5. Set dev skip intro flags
+            patch(0x926125, new byte[] { 0x01, 0x01 });
+
+            // 6. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
             patch(0x7f53ed, new byte[] { 0xeb, 0x10, 0x90, 0x90, 0x90, 0x90 });
 
-            // 6. Safehouse detail card lock icon: Force unlocked state (0x51fdba: mov al, 1; nop) + NOP jump at 0x51fdc0
+            // 7. Safehouse detail card lock icon: Force unlocked state + hide padlock
             patch(0x51fdba, new byte[] { 0xb0, 0x01, 0x90, 0x84, 0xc0, 0x5e, 0x90, 0x90 });
             patch(0x51fdc0, new byte[] { 0x90, 0x90 });
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
-            // 7. Safehouse Milestones Loop: Hide padlock child by default + SKIP 0x28feadd CHECK mark (Clean Blank Card)
+            // 8. Safehouse Milestones Loop: Hide padlock child + SKIP 0x28feadd CHECK mark (Clean Blank Card by default)
             patch(0x547cb1, new byte[] { 0xe8, 0x0a, 0xd0, 0xfc, 0xff }); // call 0x514cc0 HIDE
             patch(0x547d38, new byte[] { 0xb0, 0x01, 0x90, 0x84, 0xc0, 0x90, 0x90 });
             patch(0x547d70, new byte[] { 0xeb, 0x38, 0x90, 0x90 }); // jmp 0x547daa (skips default checkmark)
 
-            // 8. Safehouse Milestones Cursor Selection: Hide padlock + SKIP 0x28feadd CHECK mark (Clean Blank Card)
+            // 9. Safehouse Milestones Cursor Selection: Hide padlock + SKIP 0x28feadd CHECK mark (Clean Blank Card by default)
             patch(0x52fe64, new byte[] { 0xe8, 0x57, 0x4e, 0xfe, 0xff }); // call 0x514cc0 HIDE
             patch(0x52fef3, new byte[] { 0xb0, 0x01, 0x90, 0x84, 0xc0 });
             patch(0x52ff2b, new byte[] { 0xeb, 0x68, 0x90, 0x90 }); // jmp 0x52ff95 (skips default checkmark)
 
-            // 9. Blacklist menu: Skip padlock
+            // 10. Blacklist menu: Skip padlock
             patch(0x52f55b, new byte[] { 0xeb, 0x0f });
-
-            // 10. Autosave always enabled on profile creation & loading
-            patch(0x58e4b7, new byte[] { 0x31, 0xc0, 0x89, 0x44, 0x24, 0x10, 0x89, 0x46, 0x30, 0x89, 0x46, 0x3c, 0xc6, 0x46, 0x34, 0x01, 0x68, 0xb9, 0x4f, 0x56, 0x14, 0xff, 0x76, 0x10 });
-            patch(0x58e905, new byte[] { 0x89, 0x46, 0x30, 0x8b, 0x0d, 0x14, 0x5b, 0x92, 0x00, 0x89, 0x4e, 0x2c, 0xc6, 0x46, 0x34, 0x01, 0x90, 0x90 });
 
             // 11. Hide padlock in car customization shop item selection (0x7a5c16: NOP NOP)
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
@@ -114,7 +110,7 @@ while ($true) {
                 $ok = [VPNMemoryPatcher]::Apply($p.Id)
                 if ($ok) {
                     [void]$patchedPids.Add($p.Id)
-                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15, Hero BMW M3 GTR, Kilitler (Sifir Ikon) ve Otomatik Kayit aktif."
+                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15, Hero BMW M3 GTR, Kilitler (Sifir Ikon) aktif."
                 }
             }
         }
