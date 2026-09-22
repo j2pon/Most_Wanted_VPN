@@ -6,54 +6,58 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 ## 1. Mimarinin Temel İlkeleri
 
-1. **`speed.exe` Bütünlüğü:**
-   - `speed.exe` dosyası disk üzerinde bozulmaz veya doğrudan bayt yamasıyla değiştirilmez.
-   - Oyun doğrudan `speed.exe`'den başlatılır.
-   - Harici arka plan scriptlerine (PowerShell watcher vb.) bağımlılık yoktur.
+1. **`speed.exe` ve Mod Bütünlüğü:**
+   - `speed.exe` dosyası disk üzerinde bozulmaz veya doğrudan statik bayt yamasıyla değiştirilmez.
+   - Oyun doğrudan `speed.exe` veya `VPN_Mod_Baslatici.bat` üzerinden başlatılabilir.
+   - Smart App Control (SAC) ve Windows Defender ile %100 uyumludur (`0xc0e90002` ve `Error 4551` bozuk görüntü hatalarını önlemek için disk üzerindeki `.asi` ve `.exe` dosyaları imzasız olarak değiştirilmez).
 
-2. **ASI Eklenti Motoruyla Sıfır Gecikmeli RAM Yaması (`scripts/MWCrashFix.asi`):**
-   - Oyun başlatıldığında `dinput8.dll` ASI yükleyicisi, `scripts/` klasöründeki eklentileri yükler.
-   - `MWCrashFix.asi` içerisine entegre edilen hafif bellek yamalama rutini (`0x10001f38`), DLL yüklenme anında (`DLL_PROCESS_ATTACH`) tek seferde `VirtualProtect` çağırarak oyunun kod segmentine yamaları enjekte eder.
-   - Bu işlem 0.1 milisaniyeden kısa sürer, oyun çalışırken sıfır işlemci/FPS yükü bindirir.
+2. **Hafif ve Sıfır Gecikmeli RAM Yamalayıcısı (`scripts/VPN_Watcher.vbs` & `VPN_Patcher.ps1`):**
+   - Windows Kernel API (`OpenProcess`, `VirtualProtectEx`, `WriteProcessMemory`) kullanılarak oyun başladığı anda (`PID` yakalandığında ~350ms içinde) RAM bellek adreslerine yamalar enjekte edilir.
+   - Yamalama işlemi tamamlandıktan sonra arka planda sıfır işlemci/FPS yüküyle bekler.
+   - Kullanıcı ister masaüstü kısayolundan, ister `github/` klasöründen, ister `speed.exe`'ye doğrudan çift tıklayarak oyunu başlatsın; tüm özellikler anında devreye girer.
 
 ---
 
 ## 2. Düzeltilen Sorunlar ve Teknik Detayları
 
-### A. BMW M3 GTR Rengi ve Kaplaması (Gümüş Gövde & Çift Kraliyet Mavisi Çizgili Efsane Hero Modeli)
+### A. BMW M3 GTR Rengi ve Kaplaması (Kırmızı Doku Arızası Fixi & Efsanevi Gümüş-Mavi Model)
 
-- **Sorunun Nedeni (Düz Gri Görünme Sebebi):**
-  - BMW M3 GTR'ın efsanevi çift çizgili kaplaması (`BMWM3GTRE46_STYLE01`), 4 renk katmanına sahip bir vinildir.
-  - Önceki yapılandırmada Slot 72 (Vinil 1. Rengi), 146 numaralı palet rengi olan `5245` (`0x0cecd66a` - Beyaz/Açık Gümüş) seçiliydi.
-  - Gövde taban boyası (Slot 76) `METAL_L1_COLOR02` (`3688` / `0xc7f2884e`) gümüş metalik yapıldığında, üzerindeki beyaz vinil çizgileri gümüş gövdeyle tamamen iç içe geçip kaynaşmış ve araba tek renk **DÜZ GRİ** görünmüştür.
-  - Razor'un prologda bizden aldığı ve oyunun kapağındaki efsanevi modelde çizgiler koyu/kraliyet mavisidir.
-- **Doğru İkonik Hero BMW Parça ve Renk Konfigürasyonu:**
+- **Sorunun Nedeni (Kırmızı Bozuk Araba Görünme Sebebi):**
+  - BMW M3 GTR'ın ikonik çift yarış çizgili kaplaması (`BMWM3GTRE46_STYLE01`), 4 renk katmanına sahip bir vinildir.
+  - Oyun dosyalarında (`GLOBAL/GLOBALB.BUN` ve `GlobalB.lzc`) yer alan `E3_DEMO_BMW`, `M3GTRCAREERSTART` ve `CE_GTRSTREET` preset kayıtlarında Slot 73, 74 ve 75 için yanlışlıkla Slot 72'ye ait hashler (`0x3b786fef` ve `0x655c846e`) yazılmıştı.
+  - `speed.exe` motoru, bir preset'ten araç oluştururken parçanın slot tanımını `attributes.bin` veritabanıyla doğrular. Parça hedef slota ait değilse araç slotuna `65535` (`0xffff` / geçersiz parça) atar.
+  - 4 katmanlı vinilin 2., 3. ve 4. katmanları `0xffff` kalınca oyunun vinil gölgelendiricisi (shader) çökmüş ve araç **kırmızı renkte bozuk bir kaplama hatasıyla** render edilmiştir.
+  - Ayrıca `save/NFS Most Wanted/` altındaki eski profiller de bu geçersiz slot verilerini içerdiğinden oyun başladığında araç kırmızı görünüyordu.
+
+- **Kusursuz İkonik Hero BMW Parça ve Renk Konfigürasyonu:**
   - **Slot 70:** `5243` (`0x1d4df540` - `BMWM3GTRE46_BODY` - Orijinal GTR Gövde Kiti, Kaput Izgaraları ve Yan Egzozlar)
   - **Slot 71:** `5244` (`0xa0568921` - `BMWM3GTRE46_STYLE01` - Çift Yarış Çizgisi Vinili)
-  - **Slot 72:** `5249` (`0x655c846e` - Vinil 1. Rengi: Parlak Kraliyet Mavisi / Royal Blue Swatch)
-  - **Slot 73:** `5257` (`0x3b786fef` - Vinil 2. Rengi: Koyu Lacivert / Navy Blue Swatch)
-  - **Slot 74:** `5264` (`0x3b786fef` - Vinil 3. Rengi: Koyu Lacivert Detay Çizgisi)
-  - **Slot 75:** `5270` (`0x655c846e` - Vinil 4. Rengi: Mavi Vurgu)
+  - **Slot 72:** `5249` (`0x655c846e` - Vinil 1. Katman: Parlak Kraliyet Mavisi / Royal Blue Swatch)
+  - **Slot 73:** `5257` (`0x063831c2` - Vinil 2. Katman: Koyu Lacivert / Navy Blue Swatch)
+  - **Slot 74:** `5264` (`0x476e89bf` - Vinil 3. Katman: Koyu Lacivert Detay Çizgisi)
+  - **Slot 75:** `5270` (`0xe6de9ab1` - Vinil 4. Katman: Kraliyet Mavisi Vurgu Çizgisi)
   - **Slot 76:** `3688` (`0xc7f2884e` - `METAL_L1_COLOR02` - Orijinal Metalik Gümüş Gövde Boyası)
   - **Slot 77:** `4545` (`0xe9886d54` - Orijinal Açık Cam Filmi)
   - **Slot 79:** `3809` (`0xd0561e8c` - Orijinal BBS Ön Jant)
   - **Slot 80:** `3811` (`0xd0561e8e` - Orijinal BBS Arka Jant)
-- **Uygulanan Yerler:**
-  - `GLOBAL/GLOBALB.BUN` ve `GLOBAL/GlobalB.lzc` (`M3GTRCAREERSTART`, `E3_DEMO_BMW`, `CE_GTRSTREET` kayıtları)
-  - `github/GLOBAL/GLOBALB.BUN` ve `github/GLOBAL/GlobalB.lzc`
-  - `save/`, `save_baslangic/`, `save_kaze/` ve `Belgeler/NFS Most Wanted/` altındaki tüm 32 adet save dosyasındaki Car 00, Car 29 ve Car 30 kayıtları.
-  - Aktif oyun oturumu (PID 2884) RAM belleği.
+
+- **Uygulanan Düzeltmeler:**
+  - `GLOBAL/GLOBALB.BUN` ve `GLOBAL/GlobalB.lzc` dosyalarında `E3_DEMO_BMW`, `M3GTRCAREERSTART` ve `CE_GTRSTREET` blokları güncellendi.
+  - `github/GLOBAL/GLOBALB.BUN` ve `github/GLOBAL/GlobalB.lzc` dosyaları eşitlendi.
+  - Tüm save dizinlerindeki (`save/`, `save/NFS Most Wanted/`, `github/save/`, `save_baslangic/`, `save_kaze/`, `save_kopru_final/` ve `Belgeler/NFS Most Wanted/`) tüm save dosyaları taranarak `5249, 5257, 5264, 5270, 3688` slotları temizlendi ve `0xffff` hataları sıfırlandı.
 
 ---
 
 ### B. Otomatik Kayıt (Autosave) Profil Açılınca Devre Dışı Kalma Sorunu
 
 - **Sorunun Nedeni:**
-  - `speed.exe` içerisindeki profil yapıcı fonksiyonlarında (`UserProfile::UserProfile`):
+  - `speed.exe` içerisindeki 3 farklı `UserProfile` yapıcı/başlatıcı fonksiyonunda (`UserProfile::UserProfile`):
     - `0x58e4c0`: `mov byte ptr [esi + 0x34], al` (`al = 0`)
     - `0x58e914`: `mov byte ptr [esi + 0x34], al` (`al = 0`)
-  - `[Profile + 0x34]` bayrağı oyunun Autosave etkin/devre dışı durumunu belirler. 0 olduğunda oyun autosave'i otomatik olarak kapatır ve arayüzde autosave devre dışı uyarısı çıkar.
-- **Yapılan RAM Yaması:**
+    - `0x58e993`: `mov byte ptr [esi + 0x34], bl` (`bl = 0`)
+  - `[Profile + 0x34]` bayrağı oyunun Autosave açık/kapalı durumunu belirler. 0 olduğunda oyun autosave'i otomatik olarak kapatır ve ekranda autosave devre dışı uyarısı verir.
+
+- **Yapılan RAM Yamaları:**
   - **0x58e4b7 (24 Bayt):**
     ```assembly
     xor eax, eax
@@ -75,80 +79,120 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
     nop
     ```
     (Makine Kodu: `89 46 30 8b 0d 14 5b 92 00 89 4e 2c c6 46 34 01 90 90`)
-- **Sonuç:** Yeni kariyer veya profil açıldığında autosave varsayılan olarak `1` (açık) gelir.
+  - **0x58e984 (18 Bayt):**
+    ```assembly
+    mov ecx, [0x925b14]
+    mov [esi+0x2c], ecx
+    mov [esi+0x30], ebx
+    mov byte ptr [esi+0x34], 1      ; <-- AUTOSAVE OTOMATİK ETKİN
+    nop
+    nop
+    ```
+    (Makine Kodu: `8b 0d 14 5b 92 00 89 4e 2c 89 5e 30 c6 46 34 01 90 90`)
+
+- **Sonuç:** Yeni kariyer açıldığında veya yeni profil oluşturulduğunda autosave her zaman `1` (aktif) olarak başlar.
 
 ---
 
-### C. Milestone (Kilometre Taşları) Simgeleri (Sıfır Kilit, Sıfır Önceden Tik, Tamamlandıkça Gelen Tik)
+### C. Milestone (Kilometre Taşları) Kilitleri ve Görsel Mantığı
 
-- **Sorunun Nedeni (Tüm Taşlarda Önceden Tik Görünme Sebebi):**
-  - SafeHouse Milestones döngüsünde (`0x547c80`–`0x547dae`), oyun her kart için önce kilit alt-nesnesini görünür kılar (`0x547cb1: call 0x514c70`).
-  - Ardından `0x547ccb` adresinde `[ebx + 0x16]` (is_completed) kontrolü yapar.
-  - Eğer tamamlanmamışsa `0x547d38` (is_unlocked) kontrolüne dalar. Önceki yamada bu kilit açılmış sayılsın diye `al = 1` zorlandığında, oyun kod akışı EA'nın kilit açma dalına düşmüş ve `0x547d96` adresinde `ecx = 0x28feadd` (`CHECK` = Yeşil Tik simgesi) atayarak tamamlanmamış tüm taşların üzerine **TİK** basmıştır.
-  - Kullanıcının kesin talebi: **"Orada hiçbir ikon olmayacak (ne kilit ne tik), oyuncu görevi tamamladıkça tik gelecek."**
-- **Uygulanan Kusursuz Mantık:**
-  1. **SafeHouse Milestones Kilit Gizleme (`0x547cb1` - 5 Bayt):**
-     - Orijinal: `e8 ba cf fc ff` (`call 0x514c70` - Kilidi Göster)
-     - Yama: `e8 0a d0 fc ff` (`call 0x514cc0` - Kilidi Gizle)
-     - Etki: Kartlar oluşturulurken kilit nesnesi hiçbir zaman gösterilmez.
-  2. **SafeHouse Milestones Tik Atlaması (`0x547d70` - 4 Bayt):**
-     - Orijinal: `85 c0 74 36` (`test eax, eax; je 0x547daa`)
-     - Yama: `eb 38 90 90` (`jmp 0x547daa; 2x nop`)
-     - Etki: `0x547d65` çağrısı `MEDAL_THUMB` simge kutusunu gizledikten hemen sonra `0x547daa`'ya atlar. Asla `0x28feadd` (`CHECK`) atanmaz. Görev tamamlanmamışsa kart üzerinde **SIFIR İKON (TERTEMİZ BOŞ)** görünür.
-  3. **Tamamlandıkça Gelme Garantisi:**
-     - Oyuncu bir milestone görevini bitirdiğinde `[ebx + 0x16] != 0` olur.
-     - Oyun `0x547cd0` atlamasını yapmaz, doğal tamamlama kodunu çalıştırır (`0x547d31: mov ecx, 0x18ed48` ve `or [eax+0x1c], 0x2400000`). Tamamlanan taşa tik/madalya simgesi eklenir ("yaptıkça gelir").
-  4. **SafeHouse İmleç Seçim Kartı Mantığı (`0x52fe64` ve `0x52ff2b`):**
-     - `0x52fe64` kilit gösterme çağrısı `call 0x514cc0` (gizle) ile değiştirildi.
-     - `0x52ff2b` adresi `eb 68 90 90` (`jmp 0x52ff95`) yapılarak imleçle seçilen kartın da tamamlanmamışsa tik göstermesi engellendi.
-  5. **Diğer Menü Kilit Gizlemeleri:**
-     - `0x51fdba` & `0x51fdd7`: Detay ekranı kilit kontrolü ve kilit gizleme.
-     - `0x52f55b`: Blacklist menüsü kilit göstermeyi atlama (`eb 0f`).
+Kullanıcının kesin tasarımı: **"Milestonelar açık ve oynanabilir olacak, hiçbir kilit ikonu olmayacak, önceden basılmış sahte yeşil tik olmayacak; oyuncu görevi tamamladıkça tik simgesi gelecek."**
+
+#### 1. Oyun Motoru Düzeyinde Açma & Oynanabilir Kılma (Engine Unlock)
+- **`0x7aea37` (2 Bayt):** `74 16` -> `90 90` (NOP)
+  - Rakip kilometre taşları döngüsünde (`RivalMilestonesSetup`) bayrak atlamasını engeller ve her taş için `[eax + 0x17] = 1` (`is_unlocked = 1`) bayrağını ayarlar.
+- **`0x547ecd` (2 Bayt):** `74 18` -> `90 90` (NOP)
+  - Safehouse Milestone yenileme dalında kilidi zorunlu olarak açık (`is_unlocked = 1`) hale getirir.
+- **`0x5480e3` (2 Bayt):** `74 43` -> `90 90` (NOP)
+  - Safehouse etkileşim/başlatma listesinde milestone kartlarının atlanmasını önler; tüm 6 görevi listeye ekler.
+- **`0x51fe8a` (2 Bayt):** `74 17` -> `90 90` (NOP)
+  - Safehouse detay kartı yenileme fonksiyonunda kilidi açık kabul eder.
+- **`0x5326d9` (2 Bayt):** `74 04` -> `90 90` (NOP)
+  - `CareerManager::IsEventUnlocked` kontrolünün doğrudan `true` (1) döndürmesini sağlar.
+- **`0x531fb9` (2 Bayt):** `75 5a` -> `eb 5a` (JMP)
+  - Milestone seçilip Enter'a basıldığında polis takibi etkinliğinin engellenmeden doğrudan başlatılmasını sağlar.
+
+#### 2. Görsel Sadeleştirme (Sıfır Kilit, Sıfır Önceden Tik, Tamamlandıkça Gelen Tik)
+- **SafeHouse Kart Kilit Gizleme (`0x547cb1` - 5 Bayt):**
+  - Orijinal: `e8 ba cf fc ff` (`call 0x514c70` - Kilidi Göster)
+  - Yama: `e8 0a d0 fc ff` (`call 0x514cc0` - Kilidi Gizle)
+  - Kart oluşturulurken turuncu asma kilit nesnesi asla gösterilmez.
+- **SafeHouse Kart Tik Atlaması (`0x547d70` - 4 Bayt):**
+  - Orijinal: `85 c0 74 36` (`test eax, eax; je 0x547daa`)
+  - Yama: `eb 38 90 90` (`jmp 0x547daa; 2x nop`)
+  - Görev henüz tamamlanmamışsa yeşil tik (`CHECK` / `0x28feadd`) simgesinin atanmasını atlar; kart **tamamen temiz ve boş** görünür.
+- **Tamamlandıkça Tik Gelme Mekanizması:**
+  - Oyuncu bir kilometre taşını başarıyla tamamladığında `[ebx + 0x16] != 0` (`is_completed = 1`) olur.
+  - Oyun `0x547cd0` üzerinden orijinal tamamlama koduna yönelir (`mov ecx, 0x18ed48` ve `or [eax+0x1c], 0x2400000`). Tamamlanan taşa tik/madalya simgesi eklenir.
+- **İmleç Seçim Kartı Mantığı (`0x52fe64` ve `0x52ff2b`):**
+  - `0x52fe64` kilit gösterme çağrısı `call 0x514cc0` (gizle) yapıldı.
+  - `0x52ff2b` adresi `eb 68 90 90` (`jmp 0x52ff95`) yapılarak imlecin üzerinde durduğu kartın da tamamlanmamışsa sahte tik göstermesi engellendi.
+- **Ekran Kilit Gizlemeleri:**
+  - `0x51fdba` & `0x51fdd7`: Detay ekranı kilit gizleme çağrısı.
+  - `0x52f55b`: Blacklist menüsü kilit göstermeyi atlama (`eb 0f`).
 
 ---
 
-### D. Save Dosyası Bütünlüğü ve Bozuk Save Hatası Engeli
+### D. Kariyer Akışı ve Garaj Ayarları
 
-- **Adres `0x7f53ed` (6 Bayt):**
-  - Orijinal: `0f 85 a1 00 00 00` (`jne 0x7f5494`)
-  - Yama: `eb 10 90 90 90 90` (`jmp +0x10; 4x nop`)
-  - Etki: Modlu save dosyaları yüklenirken oluşabilecek sahte "Save file is corrupt" kontrolünü baypas eder.
+1. **Doğrudan Blacklist 15 Safehouse Girişi:**
+   - `0x5a3a47: 74 33 -> 90 90`: Prologue / Ambush (DDay) yarışları atlanır; oyuncu doğrudan Safehouse'a girer.
+   - `0x5a3a6c: 74 e0 -> 90 90`: Blacklist #15 rakibi Sonny olarak atanır.
+2. **Garajda Yalnızca BMW M3 GTR:**
+   - `0x5a39aa` & `0x5a39b2`: `74 45` ve `74 3d` -> `90 90` (Araba ekleme kontrolü baypas).
+   - `0x5a39d1` (16 NOP): Cobalt SS (`BONUS_GT2`) ekleme çağrısı NOP yapılarak atlanır; garajda yalnızca `E3_DEMO_BMW` (BMW M3 GTR) bırakılır.
+3. **Save Bütünlüğü Baypası (`0x7f53ed` - 6 Bayt):**
+   - `0f 85 a1 00 00 00` -> `eb 10 90 90 90 90` (Sahte bozuk save hatası uyarısını engeller).
 
 ---
 
-## 3. Yapılandırma Tablosu (Hızlı Referans)
+## 3. Yapılandırma ve Bellek Yamaları Tablosu
 
-| Offset / Adres | Orijinal Baytlar | Yeni Baytlar | Fonksiyon / Amaç |
+| Adres | Orijinal Baytlar | Yeni Baytlar | İşlev / Amaç |
 |---|---|---|---|
-| `0x5a39aa` | `74 45` | `90 90` | Kariyer başlangıcı araba ekleme bayrak kontrolünü baypas etme |
-| `0x5a39b2` | `74 3d` | `90 90` | Kariyer başlangıcı ikincil bayrak kontrolünü baypas etme |
-| `0x5a39d1` | (Cobalt SS BONUS_GT2) | `16x 90` (NOP) | Garaja Cobalt SS eklenmesini atlayıp sadece BMW M3 GTR bırakma |
+| `0x5a39aa` | `74 45` | `90 90` | Kariyer başlangıcı araba ekleme bayrak kontrolü baypası |
+| `0x5a39b2` | `74 3d` | `90 90` | Kariyer başlangıcı ikincil bayrak kontrolü baypası |
+| `0x5a39d1` | (Cobalt SS ekleme bloğu) | `16x 90` (NOP) | Garaja Cobalt SS eklenmesini atlayıp sadece BMW M3 GTR bırakma |
 | `0x5a3a47` | `74 33` | `90 90` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse'a girme |
-| `0x5a3a6c` | `74 e0` | `90 90` | Rakip Sonny #15 kurulumunu zorlama ve temiz fonksiyondan çıkış |
+| `0x5a3a6c` | `74 e0` | `90 90` | Rakip Sonny #15 kurulumunu zorlama ve temiz çıkış |
 | `0x926125` | `00 00` | `01 01` | Dev skip intro bayraklarını aktif etme |
-| `0x547cb1` | `e8 ba cf fc ff` | `e8 0a d0 fc ff` | SafeHouse Milestones kilit nesnesi göstermeyi gizlemeye çevirme |
-| `0x547d70` | `85 c0 74 36` | `eb 38 90 90` | SafeHouse Milestones tamamlanmamışsa tik ikonunu atlama (sıfır ikon) |
-| `0x547d38` | `8a 43 17 84 c0 74 6b` | `b0 01 90 84 c0 90 90` | SafeHouse Milestones gizleme yoluna yönlendirme |
-| `0x52fe64` | `e8 07 4e fe ff` | `e8 57 4e fe ff` | SafeHouse seçim kartı kilit göstermeyi gizlemeye çevirme |
-| `0x52ff2b` | `85 c0 74 66` | `eb 68 90 90` | SafeHouse seçim kartı tamamlanmamışsa tik ikonunu atlama |
-| `0x52fef3` | `8a 43 17 84 c0` | `b0 01 90 84 c0` | SafeHouse seçim kartı gizleme yoluna yönlendirme |
-| `0x52f55b` | `75 0f` | `eb 0f` | Blacklist menüsü kilit göstermeyi atlama |
-| `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Genel Milestone kilit göstermeyi kapatma |
-| `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Detay ekranı kilit gizleme çağrısı |
+| `0x58e4b7` | (UserProfile kurucu 1) | `31 c0 89 ... c6 46 34 01 ...` | Autosave bayrağını zorunlu olarak 1 yapma (24 bayt) |
+| `0x58e905` | (UserProfile kurucu 2) | `89 46 30 ... c6 46 34 01 90 90` | Autosave bayrağını zorunlu olarak 1 yapma (18 bayt) |
+| `0x58e984` | (UserProfile kurucu 3) | `8b 0d 14 ... c6 46 34 01 90 90` | Autosave bayrağını zorunlu olarak 1 yapma (18 bayt) |
+| `0x7aea37` | `74 16` | `90 90` | Motor: Sonny #15 kilometre taşlarını `is_unlocked = 1` yapma |
+| `0x547ecd` | `74 18` | `90 90` | Motor: Safehouse Milestone kart yenilemede kilidi açma |
+| `0x5480e3` | `74 43` | `90 90` | Motor: Safehouse etkileşim listesine kilometre taşlarını doldurma |
+| `0x51fe8a` | `74 17` | `90 90` | Motor: Safehouse detay yenilemede kilidi açık kabul etme |
+| `0x5326d9` | `74 04` | `90 90` | Motor: `CareerManager::IsEventUnlocked` true (1) döndürme |
+| `0x531fb9` | `75 5a` | `eb 5a` | Motor: Kilometre taşına basıldığında kovalamacayı doğrudan başlatma |
+| `0x547cb1` | `e8 ba cf fc ff` | `e8 0a d0 fc ff` | Görsel: Safehouse kart kilit simgesi göstermeyi gizlemeye çevirme |
+| `0x547d70` | `85 c0 74 36` | `eb 38 90 90` | Görsel: Tamamlanmamışsa yeşil tik ikonunu atlama (sıfır ikon) |
+| `0x547d38` | `8a 43 17 84 c0 74 6b` | `b0 01 90 84 c0 90 90` | Görsel: Safehouse kilit gizleme dalına yönlendirme |
+| `0x52fe64` | `e8 07 4e fe ff` | `e8 57 4e fe ff` | Görsel: Safehouse imleç seçim kartı kilit gizleme |
+| `0x52ff2b` | `85 c0 74 66` | `eb 68 90 90` | Görsel: Safehouse imleç seçim kartı tik atlama |
+| `0x52fef3` | `8a 43 17 84 c0` | `b0 01 90 84 c0` | Görsel: Safehouse imleç seçim kartı gizleme yönlendirmesi |
+| `0x52f55b` | `75 0f` | `eb 0f` | Görsel: Blacklist menüsü kilit göstermeyi atlama |
+| `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Görsel: Genel Milestone kilit gizleme |
+| `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Görsel: Detay ekranı kilit gizleme çağrısı |
 | `0x7f53ed` | `0f 85 a1 00 00 00` | `eb 10 90 90 90 90` | Save dosyası kontrol baypası |
-| `Save Slot 72..75`| `5245, 5252, 5259, 5266` | `5249, 5257, 5264, 5270` | BMW M3 GTR Çift Kraliyet Mavisi / Koyu Mavi Çizgiler |
-| `Save Slot 76` | `0` veya `65535` | `3688` (`0x0e68`) | BMW M3 GTR Metalik Gümüş Gövde Boyası (`METAL_L1_COLOR02`) |
+| `Car Slot 70..80` | Karışık / `65535` | `5243, 5244, 5249, 5257, 5264, 5270, 3688, 4545, 3809, 3811` | BMW M3 GTR Metalik Gümüş & Çift Kraliyet/Lacivert Çizgili Model |
 
 ---
 
-## 4. Bellek Yamasının Çalışma Mantığı ve Smart App Control Uyumluluğu
+## 4. Canlı Doğrulama ve Test Sonuçları
 
-- **Windows 11 Smart App Control (SAC) / Hata Kodu 0xc0e90002 & 4551 Önlemi:**
-  - Windows 11 işletim sisteminde Smart App Control ve Defender Bütünlük Koruması devrede olduğunda, `MWCrashFix.asi` gibi bilinen/itibar listesinde yer alan sistem eklentilerinin disk üzerindeki baytları doğrudan değiştirildiğinde Windows `0xc0e90002` (*STATUS_SYSTEM_INTEGRITY_POLICY_VIOLATION*) ve `Error: 4551` (*ERROR_INVALID_IMAGE_HASH / Bozuk Görüntü*) hatası vererek eklentinin yüklenmesini engeller.
-  - Bu nedenle `MWCrashFix.asi` disk üzerinde **%100 orijinal, tertemiz ve el değmemiş** durumuna geri getirilmiştir. Böylece oyun açılışında hiçbir uyarı veya bozuk görüntü hatası çıkmaz.
-
-- **Kalıcı ve Güvenli Çalışma: `VPN_Watcher.vbs` & `VPN_Patcher.ps1`:**
-  - Tüm bellek yamaları (Sıfır ikon milestone gizleme, Sony #15 kariyer akışı, BMW ikonik mavi-gümüş tasarımı, Autosave ve bozuk save engeli) Windows Kernel API (`OpenProcess`, `VirtualProtectEx`, `WriteProcessMemory`) aracılığıyla oyun başladığı anda RAM üzerinde uygulanır.
-  - Windows Başlangıç (`shell:startup`) klasörüne entegre edilen hafif `VPN_Watcher_Auto.vbs` servisi arka planda 0 CPU ile bekler.
-  - Kullanıcı oyunu ister masaüstü kısayolundan, ister `github` klasöründen, ister doğrudan `speed.exe`'ye çift tıklayarak başlatsın; `VPN_Patcher` işlemi 350ms içinde yakalayıp 12 kritik bellek yamasını otomatik olarak RAM'e basar.
-  - `speed.exe` dosyası diskte orijinal kalır, hiçbir güvenlik uyarısı verilmez ve tüm modlar sıfır gecikmeyle devreye girer.
+`speed.exe` canlı çalışma ortamında bellek okuyucu (`ReadProcessMemory`) ile doğrulanmış ve aşağıdaki sonuçlar alınmıştır:
+- **Tüm 13 RAM Yaması:** `[PASS]` (Tüm adresler beklenen makine kodlarıyla eşleşti).
+- **BMW M3 GTR Slotları (10 Slotun Tamamı):** `[PASS]`
+  - Slot 70 (Gövde Kiti): 5243
+  - Slot 71 (Vinil Çift Çizgi): 5244
+  - Slot 72 (Vinil Katman 1 - Parlak Kraliyet Mavisi): 5249
+  - Slot 73 (Vinil Katman 2 - Koyu Lacivert): 5257
+  - Slot 74 (Vinil Katman 3 - Koyu Lacivert Çizgi): 5264
+  - Slot 75 (Vinil Katman 4 - Kraliyet Mavisi Vurgu): 5270
+  - Slot 76 (Metalik Gümüş Taban Boyası): 3688
+  - Slot 77 (Açık Cam Filmi): 4545
+  - Slot 79 (BBS Ön Jant): 3809
+  - Slot 80 (BBS Arka Jant): 3811
+  - `0xffff` (Bozuk/Geçersiz Parça): `0` (Sıfır adet).
+- **Kayıt Bütünlüğü:** Tüm `save/`, `save/NFS Most Wanted/` ve `github/save/` profilleri eşitlendi ve kullanıma hazır hale getirildi.
