@@ -54,50 +54,45 @@ public class VPNMemoryPatcher {
             // 4. Ensure rival Sonny #15 is set (0x5a3a6c: 6x NOP je 0x5a3b4e - avoids FPU corruption)
             patch(0x5a3a6c, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
 
-            // 5. Set dev skip intro flags
-            patch(0x926125, new byte[] { 0x01, 0x01 });
-
-            // 6. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
+            // 5. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
             patch(0x7f53ed, new byte[] { 0xeb, 0x10, 0x90, 0x90, 0x90, 0x90 });
 
-            // 7. Autosave automatic enable on new profile creation (0x58e4b7, 0x58e905 & 0x58e984)
-            patch(0x58e4b7, new byte[] { 0x31, 0xc0, 0x89, 0x44, 0x24, 0x10, 0x89, 0x46, 0x30, 0x89, 0x46, 0x3c, 0xc6, 0x46, 0x34, 0x01, 0x68, 0xb9, 0x4f, 0x56, 0x14, 0xff, 0x76, 0x10 });
-            patch(0x58e905, new byte[] { 0x89, 0x46, 0x30, 0x8b, 0x0d, 0x14, 0x5b, 0x92, 0x00, 0x89, 0x4e, 0x2c, 0xc6, 0x46, 0x34, 0x01, 0x90, 0x90 });
-            patch(0x58e984, new byte[] { 0x8b, 0x0d, 0x14, 0x5b, 0x92, 0x00, 0x89, 0x4e, 0x2c, 0x89, 0x5e, 0x30, 0xc6, 0x46, 0x34, 0x01, 0x90, 0x90 });
+            // 6. Autosave automatic enable on new profile creation (exact 3-byte 'inc byte ptr [esi+0x34]' - preserves all vtables & registers)
+            patch(0x58e4c0, new byte[] { 0xfe, 0x46, 0x34 });
+            patch(0x58e914, new byte[] { 0xfe, 0x46, 0x34 });
+            patch(0x58e993, new byte[] { 0xfe, 0x46, 0x34 });
 
-            // 8. UNLOCK MILESTONES IN ENGINE (Playable & Selectable):
-            // 8a. Safehouse Milestone List: NOP je 0x548128 (0x5480e3: 74 43 -> 90 90) -> populates all milestones
+            // 7. UNLOCK MILESTONES IN ENGINE (Playable & Selectable):
+            // 7a. Safehouse Milestone List: NOP je 0x548128 (0x5480e3: 74 43 -> 90 90) -> populates all milestones
             patch(0x5480e3, new byte[] { 0x90, 0x90 });
-            // 8b. CareerManager::IsEventUnlocked: NOP je 0x5326df (0x5326d9: 74 04 -> 90 90) -> returns true (1)
+            // 7b. CareerManager::IsEventUnlocked: NOP je 0x5326df (0x5326d9: 74 04 -> 90 90) -> returns true (1)
             patch(0x5326d9, new byte[] { 0x90, 0x90 });
-            // 8c. Milestone Start/Engage Event: JMP 0x532015 (0x531fb9: 75 5a -> eb 5a) -> starts pursuit directly
-            patch(0x531fb9, new byte[] { 0xeb, 0x5a });
 
-            // 9. SAFEHOUSE MILESTONE VISUALS (Zero Padlock Icon + Progressive Completion Checkmark):
-            // 9a. Safehouse card padlock show loop skip: jmp 0x547cc3 (0x547ca7: 7e 1a -> eb 1a)
+            // 8. SAFEHOUSE MILESTONE VISUALS (Zero Padlock Icon + Progressive Completion Checkmark):
+            // 8a. Safehouse card padlock show loop skip: jmp 0x547cc3 (0x547ca7: 7e 1a -> eb 1a)
             patch(0x547ca7, new byte[] { 0xeb, 0x1a });
-            // 9b. Safehouse card padlock texture skip: jmp 0x547daa (0x547d2f: 75 79 -> eb 79)
+            // 8b. Safehouse card padlock texture skip: jmp 0x547daa (0x547d2f: 75 79 -> eb 79)
             patch(0x547d2f, new byte[] { 0xeb, 0x79 });
-            // 9c. Safehouse refresh loop: skip padlock texture, render flag and show call (0x5301bd: 75 16 -> eb 48)
+            // 8c. Safehouse refresh loop: skip padlock texture, render flag and show call (0x5301bd: 75 16 -> eb 48)
             patch(0x5301bd, new byte[] { 0xeb, 0x48 });
 
-            // 10. CURSOR SELECTION CARD VISUALS:
-            // 10a. Cursor selection padlock show loop skip: jmp 0x52fe76 (0x52fe5f: 7e 15 -> eb 15)
+            // 9. CURSOR SELECTION CARD VISUALS:
+            // 9a. Cursor selection padlock show loop skip: jmp 0x52fe76 (0x52fe5f: 7e 15 -> eb 15)
             patch(0x52fe5f, new byte[] { 0xeb, 0x15 });
-            // 10b. Cursor selection padlock texture skip: jmp 0x52ff95 (0x52feec: b9 48 ed 18 00 eb 63 -> eb a7 90 90 90 90 90)
+            // 9b. Cursor selection padlock texture skip: jmp 0x52ff95 (0x52feec: b9 48 ed 18 00 eb 63 -> eb a7 90 90 90 90 90)
             patch(0x52feec, new byte[] { 0xeb, 0xa7, 0x90, 0x90, 0x90, 0x90, 0x90 });
-            // 10c. Cursor selection fallback padlock skip: jmp 0x52ff95 (0x52ff6a: 85 c0 74 1c -> eb 29 90 90)
+            // 9c. Cursor selection fallback padlock skip: jmp 0x52ff95 (0x52ff6a: 85 c0 74 1c -> eb 29 90 90)
             patch(0x52ff6a, new byte[] { 0xeb, 0x29, 0x90, 0x90 });
 
-            // 11. Detail Card Lock Icon:
+            // 10. Detail Card Lock Icon:
             patch(0x51fdba, new byte[] { 0xb0, 0x01, 0x90, 0x84, 0xc0, 0x5e, 0x90, 0x90 });
             patch(0x51fdc0, new byte[] { 0x90, 0x90 });
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
-            // 12. Blacklist menu: Skip padlock
+            // 11. Blacklist menu: Skip padlock
             patch(0x52f55b, new byte[] { 0xeb, 0x0f });
 
-            // 13. Hide padlock in car customization shop item selection
+            // 12. Hide padlock in car customization shop item selection
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
             patch(0x7a5c60, new byte[] { 0xe9, 0xdb, 0xff, 0xff, 0xff });
 

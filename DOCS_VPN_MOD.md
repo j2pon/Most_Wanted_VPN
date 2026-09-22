@@ -72,10 +72,26 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 - `0x7aea37` (`74 16`), `0x547ecd` (`74 18`), `0x51fe8a` (`74 17`), `0x547d70` (`85 c0 74 36`) ve `0x52ff2b` (`85 c0 74 66`) adresleri orijinal hallerine restore edildi.
 - **Sonuç:** Görev henüz yapılmamışken kart bomboş ve kilit simgesiz görünür. Oyuncu polisi atlatıp kilometre taşını bitirdiğinde yeşil tik simgesi (`0x028feadd`) doğal olarak kartın üzerine gelir.
 
-#### 3. Oyun Motoru Seviyesinde Oynanabilirlik
+#### 3. Oyun Motoru Seviyesinde Oynanabilirlik ve Çökme (Crash) Kök Neden Analizi
+- **Milestone Seçildiğinde Çökme Sorunu (Crash Fix):**
+  - Önceki yamada `0x531fb9` adresi (`75 5a` -> `eb 5a`) yapılmış ve `0x926125` / `0x926126` bayrakları `1` yapılmıştı.
+  - Oysa `0x531fbb` - `0x532010` aralığı takip oturumunu (`0x600c30`, `0x5fb710`, `0x603440`, `0x600ab0`, `0x5e39e0`) başlatan ve dünyayı hazırlayan ana motordur. `eb 5a` atlaması bu hazırlık kodunu tamamen atlayıp doğrudan `0x532015` adresine zıplattığı için oyun tanımsız/boş işaretçiler nedeniyle masaüstüne çöküyordu.
+  - Benzer şekilde `0x926126` bayrağı 1 olduğunda `0x531f82` adresi de aynı şekilde `0x532015`'e sıçrayarak çökmeye neden oluyordu.
+  - **Kesin Çözüm:** `0x531fb9` ve `0x926125` / `0x926126` adresleri orijinal doğal haline bırakıldı. Milestone seçilip Enter'a basıldığında takip oturumu motor tarafından eksiksiz başlatılır; oyun asla çökmez.
 - **`0x5480e3` (2 Bayt):** `74 43` -> `90 90` (Safehouse listesine tüm taşları ekler).
 - **`0x5326d9` (2 Bayt):** `74 04` -> `90 90` (`CareerManager::IsEventUnlocked` true döndürür).
-- **`0x531fb9` (2 Bayt):** `75 5a` -> `eb 5a` (Enter'a basıldığında takibi engelsiz başlatır).
+
+---
+
+### D. GLOBALB.BUN ve GlobalB.lzc Dosyalarının Onarılması ("Kırmızı GTR" Kaplama Arızasının İkinci Kök Nedeni)
+- **Sorun:** Eski bir yardımcı script (`patch_bun_lzc_presets.py`) sıkıştırılmış bir LZC arşivi olan `GLOBAL/GlobalB.lzc` dosyasının içerisine doğrudan ham bayt yazmış ve lzc sıkıştırma sözlüğünü bozmuştu.
+- **Etkisi:** Oyun açılırken araç önayar (preset) veri tabanını çözerken hata alıyor ve BMW M3 GTR'ın orijinal gümüş-mavi dokusunu yükleyemeyip varsayılan kırmızı/grafiti dokusuna düşüyordu.
+- **Çözüm:** `GLOBALB.BUN` ve `GlobalB.lzc` (ve `attributes.bin`) dosyaları orijinal temiz `.vpn_bak` / `.original` kopyalarından eksiksiz restore edildi.
+
+---
+
+### E. UserProfile Autosave Kancası İyileştirmesi
+- `0x58e4c0`, `0x58e914` ve `0x58e993` adreslerindeki autosave kontrolü, vtable veya diğer yazmaçları riske atmayan saf 3 baytlık `fe 46 34` (`inc byte ptr [esi+0x34]`) ile güncellendi.
 
 ---
 
@@ -88,13 +104,11 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 | `0x5a39d1` | (Cobalt SS + BMW ekleme bloğu) | `68 20 45 a9 03 ... 16x 90` | Garaja SADECE BMW M3 GTR ekleyip aktif araç yapma, Cobalt SS'i tamamen silme (32 bayt) |
 | `0x5a3a47` | `74 33` | `90 90` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse'a girme |
 | `0x5a3a6c` | `0f 84 dc 00 00 00` | `90 90 90 90 90 90` | Rakip Sonny #15 kurulumunu zorlama ve FPU çökmesini önleme (6 bayt) |
-| `0x926125` | `00 00` | `01 01` | Dev skip intro bayraklarını aktif etme |
-| `0x58e4b7` | (UserProfile kurucu 1) | `31 c0 89 ... c6 46 34 01 ...` | Autosave bayrağını zorunlu olarak 1 yapma (24 bayt) |
-| `0x58e905` | (UserProfile kurucu 2) | `89 46 30 ... c6 46 34 01 90 90` | Autosave bayrağını zorunlu olarak 1 yapma (18 bayt) |
-| `0x58e984` | (UserProfile kurucu 3) | `8b 0d 14 ... c6 46 34 01 90 90` | Autosave bayrağını zorunlu olarak 1 yapma (18 bayt) |
+| `0x58e4c0` | `88 46 34` | `fe 46 34` | UserProfile kurucu 1: Autosave daima aktif (inc [esi+0x34]) |
+| `0x58e914` | `88 46 34` | `fe 46 34` | UserProfile kurucu 2: Autosave daima aktif (inc [esi+0x34]) |
+| `0x58e993` | `88 46 34` | `fe 46 34` | UserProfile kurucu 3: Autosave daima aktif (inc [esi+0x34]) |
 | `0x5480e3` | `74 43` | `90 90` | Motor: Safehouse listesine kilometre taşlarını eksiksiz doldurma |
 | `0x5326d9` | `74 04` | `90 90` | Motor: `CareerManager::IsEventUnlocked` true (1) döndürme |
-| `0x531fb9` | `75 5a` | `eb 5a` | Motor: Kilometre taşı seçildiğinde kovalamacayı doğrudan başlatma |
 | `0x5301bd` | `75 16` | `eb 48` | Görsel: Safehouse kart yenilemede kilit dokusunu, render bayrağını ve kilit gösterme çağrısını kökten atlama |
 | `0x547ca7` | `7e 1a` | `eb 1a` | Görsel: Safehouse kart kilit gösterme döngüsünü atlama |
 | `0x547d2f` | `75 79` | `eb 79` | Görsel: Safehouse kartına LOCK dokusu atanmasını atlama |
