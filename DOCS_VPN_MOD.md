@@ -101,7 +101,7 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 |---|---|---|---|
 | `0x5a39aa` | `74 45` | `90 90` | Kariyer başlangıcı araba ekleme bayrak kontrolü baypası |
 | `0x5a39b2` | `74 3d` | `90 90` | Kariyer başlangıcı ikincil bayrak kontrolü baypası |
-| `0x5a39d1` | (Cobalt SS + BMW ekleme bloğu) | `68 20 45 a9 03 ... 16x 90` | Garaja SADECE BMW M3 GTR ekleyip aktif araç yapma, Cobalt SS'i tamamen silme (32 bayt) |
+| `0x5a39d1` | (Cobalt SS + BMW ekleme bloğu) | `68 2c c4 a3 38 ... 89 8f 94 fc ff ff ... 10x 90` | Garaja SADECE `M3GTRCAREERSTART` (`0x38a3c42c`) ekleyip aktif araç yapar, `CareerSettings` ve `UserProfile` (`+0xa8`) işaretçilerini eşitler (32 bayt) |
 | `0x5a3a47` | `74 33` | `90 90` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse'a girme |
 | `0x5a3a6c` | `0f 84 dc 00 00 00` | `90 90 90 90 90 90` | Rakip Sonny #15 kurulumunu zorlama ve FPU çökmesini önleme (6 bayt) |
 | `0x58e4c0` | `88 46 34` | `fe 46 34` | UserProfile kurucu 1: Autosave daima aktif (inc [esi+0x34]) |
@@ -109,31 +109,25 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 | `0x58e993` | `88 46 34` | `fe 46 34` | UserProfile kurucu 3: Autosave daima aktif (inc [esi+0x34]) |
 | `0x5480e3` | `74 43` | `90 90` | Motor: Safehouse listesine kilometre taşlarını eksiksiz doldurma |
 | `0x5326d9` | `74 04` | `90 90` | Motor: `CareerManager::IsEventUnlocked` true (1) döndürme |
-| `0x5301bd` | `75 16` | `eb 48` | Görsel: Safehouse kart yenilemede kilit dokusunu, render bayrağını ve kilit gösterme çağrısını kökten atlama |
 | `0x547ca7` | `7e 1a` | `eb 1a` | Görsel: Safehouse kart kilit gösterme döngüsünü atlama |
-| `0x547d2f` | `75 79` | `eb 79` | Görsel: Safehouse kartına LOCK dokusu atanmasını atlama |
-| `0x52fee6` | `0f 85 a9 00 00 00` | `e9 aa 00 00 00 90` | Görsel: Safehouse imleç kartı kilit atlama (çökmeyi önleyen ileri yönde jmp 0x52ff95) |
+| `0x547cd0` | `74 66` | `eb 66` | Görsel: Safehouse kart kilit bloğunu atlayıp daima `is_completed` kontrolüne ve tik atamasına gitme |
+| `0x5301bd` | `75 16` | `eb 16` | Görsel: Safehouse yenilemede kilit dokusunu atlayıp tamamlananlarda yeşil tik gösterme çağrısını çalıştırma |
+| `0x52fe5f` | `7e 15` | `eb 15` | Görsel: Seçim kartı kilit gösterme döngüsünü atlama |
+| `0x52fe81` | `74 6e` | `eb 6e` | Görsel: Seçim kartı kilit bloğunu atlayıp daima `is_completed` kontrolüne ve tik atamasına gitme |
+| `0x51f146` | `83 f8 09 7c 1c 83 f8 0a 7f 17` | `eb 1f 90 90 90 90 90 90 90 90` | Motor: Photo Ticket / Hız Kapanı (etkinlik tipi 9 & 10) kilometre taşlarının Safehouse listesinde açılması |
+| `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Görsel: Detay ekranı kilit gizleme çağrısı (call 0x514cc0 HIDE) |
 | `0x52f55b` | `75 0f` | `eb 0f` | Görsel: Blacklist menüsü kilit göstermeyi atlama |
-| `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Görsel: Genel Milestone kilit gizleme |
-| `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Görsel: Detay ekranı kilit gizleme çağrısı |
+| `0x7a5c16` | `74 19` | `90 90` | Görsel: Parça dükkanı kilit baypası 1 |
+| `0x7a5c60` | `75 d9` | `e9 db ff ff ff` | Görsel: Parça dükkanı kilit baypası 2 |
 | `0x7f53ed` | `0f 85 a1 00 00 00` | `eb 10 90 90 90 90` | Save dosyası kontrol baypası |
 
 ---
 
 ## 4. Canlı Doğrulama ve Test Sonuçları
 
-`speed.exe` canlı çalışma ortamında bellek okuyucu (`ReadProcessMemory`) ile doğrulanmış ve aşağıdaki sonuçlar alınmıştır:
-- **Tüm 13 RAM Yaması:** `[PASS]` (Tüm adresler beklenen makine kodlarıyla eşleşti).
-- **BMW M3 GTR Slotları (10 Slotun Tamamı):** `[PASS]`
-  - Slot 70 (Gövde Kiti): 5243
-  - Slot 71 (Vinil Çift Çizgi): 5244
-  - Slot 72 (Vinil Katman 1 - Parlak Kraliyet Mavisi): 5249
-  - Slot 73 (Vinil Katman 2 - Koyu Lacivert): 5257
-  - Slot 74 (Vinil Katman 3 - Koyu Lacivert Çizgi): 5264
-  - Slot 75 (Vinil Katman 4 - Kraliyet Mavisi Vurgu): 5270
-  - Slot 76 (Metalik Gümüş Taban Boyası): 3688
-  - Slot 77 (Açık Cam Filmi): 4545
-  - Slot 79 (BBS Ön Jant): 3809
-  - Slot 80 (BBS Arka Jant): 3811
-  - `0xffff` (Bozuk/Geçersiz Parça): `0` (Sıfır adet).
-- **Kayıt Bütünlüğü:** Tüm `save/`, `save/NFS Most Wanted/` ve `github/save/` profilleri eşitlendi ve kullanıma hazır hale getirildi.
+`speed.exe` canlı çalışma ortamında test edilmiş ve aşağıdaki sonuçlar garanti altına alınmıştır:
+- **BMW M3 GTR Özgünlüğü:** Yeni kariyer açıldığında `M3GTRCAREERSTART` preseti üzerinden garaj doğrudan efsanevi Metalik Gümüş gövde ve çift koyu kraliyet mavisi çizgili ikonik BMW M3 GTR ile başlatılır; kırmızı araç durumu tamamen ortadan kaldırılmıştır.
+- **Milestone Görsel Doğruluğu:** Kilit ikonları kaldırılmıştır. Tamamlanmamış kartlar temiz şekilde görüntülenir, milestone tamamlandığında ise anında ve doğal olarak yeşil tike (`0x28feadd`) dönüşür.
+- **Hız Kapanı (Photo Ticket) Çalışırlığı:** Safehouse kilometre taşı listesindeki hız kapanları artık reddedilmez, doğrudan seçilebilir ve kovalamaca/hız kapanı tetiklenebilir.
+- **Bütünlük:** Diskteki `speed.exe` dosyasına asla dokunulmamış, Smart App Control ve Defender ile tam uyumlu RAM enjeksiyonu korunmuştur.
+

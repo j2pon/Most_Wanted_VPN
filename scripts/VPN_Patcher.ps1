@@ -36,16 +36,15 @@ public class VPNMemoryPatcher {
             patch(0x5a39aa, new byte[] { 0x90, 0x90 });
             patch(0x5a39b2, new byte[] { 0x90, 0x90 });
 
-            // 2. Add ONLY Hero BMW M3 GTR to garage and set as Active Car (0x5a39d1)
+            // 2. Add ONLY Hero BMW M3 GTR (M3GTRCAREERSTART) to garage and set as Active Car (0x5a39d1)
             patch(0x5a39d1, new byte[] {
-                0x68, 0x20, 0x45, 0xa9, 0x03, // push 0x03a94520 (E3_DEMO_BMW)
+                0x68, 0x2c, 0xc4, 0xa3, 0x38, // push 0x38a3c42c (M3GTRCAREERSTART: Metallic Silver + Dual Stripes Hero Livery)
                 0x8b, 0xcf,                   // mov ecx, edi
                 0xe8, 0x43, 0x63, 0xff, 0xff, // call 0x599d20 (AddCar)
                 0x8b, 0x08,                   // mov ecx, [eax]
                 0x89, 0x0e,                   // mov [esi], ecx (Active car = BMW M3 GTR!)
-                // 16 NOPs to completely eliminate Cobalt SS addition:
-                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90,
-                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90
+                0x89, 0x8f, 0x94, 0xfc, 0xff, 0xff, // mov [edi - 0x36c], ecx (UserProfile->mCareerProfile + 0xa8 = ecx)
+                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 // 10 NOPs (cleans out Cobalt SS addition)
             });
 
             // 3. Skip Prologue / Ambush (DDay) races (0x5a3a47 -> NOP je 0x5a3a7c) -> Enter Safehouse directly
@@ -71,24 +70,27 @@ public class VPNMemoryPatcher {
             // 8. SAFEHOUSE MILESTONE VISUALS (Zero Padlock Icon + Progressive Completion Checkmark):
             // 8a. Safehouse card padlock show loop skip: jmp 0x547cc3 (0x547ca7: 7e 1a -> eb 1a)
             patch(0x547ca7, new byte[] { 0xeb, 0x1a });
-            // 8b. Safehouse card padlock texture skip: jmp 0x547daa (0x547d2f: 75 79 -> eb 79)
-            patch(0x547d2f, new byte[] { 0xeb, 0x79 });
-            // 8c. Safehouse refresh loop: skip padlock texture, render flag and show call (0x5301bd: 75 16 -> eb 48)
-            patch(0x5301bd, new byte[] { 0xeb, 0x48 });
+            // 8b. Safehouse card padlock bypass -> ALWAYS execute is_completed check (0x547cd0: 74 66 -> eb 66)
+            patch(0x547cd0, new byte[] { 0xeb, 0x66 });
+            // 8c. Safehouse refresh loop: skip padlock texture, allow checkmark show call (0x5301bd: 75 16 -> eb 16)
+            patch(0x5301bd, new byte[] { 0xeb, 0x16 });
 
-            // 9. CURSOR SELECTION CARD VISUALS (Crash-proof forward jump):
+            // 9. CURSOR SELECTION CARD VISUALS (Zero Padlock + Proper Checkmark):
             // 9a. Cursor selection padlock show loop skip: jmp 0x52fe76 (0x52fe5f: 7e 15 -> eb 15)
             patch(0x52fe5f, new byte[] { 0xeb, 0x15 });
-            // 9b. Cursor selection skip lock texture & render: clean forward jmp 0x52ff95 (0x52fee6: 0f 85 a9 00 00 00 -> e9 aa 00 00 00 90)
-            patch(0x52fee6, new byte[] { 0xe9, 0xaa, 0x00, 0x00, 0x00, 0x90 });
+            // 9b. Cursor selection padlock bypass -> ALWAYS execute is_completed check (0x52fe81: 74 6e -> eb 6e)
+            patch(0x52fe81, new byte[] { 0xeb, 0x6e });
 
-            // 10. Detail Card Lock Icon: Redirect show call to 0x514cc0 (HIDE)
+            // 10. PHOTO TICKET / SPEED TRAP MILESTONE FIX (Event types 9 & 10 allowed in Safehouse milestone list):
+            patch(0x51f146, new byte[] { 0xeb, 0x1f, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+
+            // 11. Detail Card Lock Icon: Redirect show call to 0x514cc0 (HIDE)
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
-            // 11. Blacklist menu: Skip padlock
+            // 12. Blacklist menu: Skip padlock
             patch(0x52f55b, new byte[] { 0xeb, 0x0f });
 
-            // 12. Hide padlock in car customization shop item selection
+            // 13. Hide padlock in car customization shop item selection
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
             patch(0x7a5c60, new byte[] { 0xe9, 0xdb, 0xff, 0xff, 0xff });
 
