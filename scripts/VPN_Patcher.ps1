@@ -45,18 +45,22 @@ public class VPNMemoryPatcher {
             // 4. Force Sonny #15 setup and clean jump to save initialization (calls 0x666fe0 / 0x6596e0 at 0x5a3b30, fixing autosave)
             patch(0x5a3a66, new byte[] { 0xc6, 0x46, 0x08, 0x0f, 0xe9, 0xc1, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90 });
 
-            // 5. Hide milestone orange padlock icon in Safehouse menu (NOP NOP + redirect show call to hide call)
+            // 5. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
+            patch(0x7f53ed, new byte[] { 0xeb, 0x10 });
+
+            // 6. Safehouse detail card lock icon: Force unlocked state (0x51fdba: mov al, 1; nop) + NOP jump at 0x51fdc0
+            patch(0x51fdba, new byte[] { 0xb0, 0x01, 0x90 });
             patch(0x51fdc0, new byte[] { 0x90, 0x90 });
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
-            // 6. Hide milestone orange padlock icon on thumbnail cards in Safehouse list (NOP NOP + redirect show call to hide call)
-            patch(0x52fefb, new byte[] { 0x90, 0x90 });
+            // 7. Safehouse milestone thumbnail cards: Force unlocked state (0x52fef3: mov al, 1; nop) -> hides lock and displays unlocked card texture
+            patch(0x52fef3, new byte[] { 0xb0, 0x01, 0x90 });
             patch(0x52ff8d, new byte[] { 0xe8, 0x2e, 0x4d, 0xfe, 0xff }); // call 0x514cc0 HIDE
 
-            // 7. Hide padlock in car customization shop item selection (0x7a5c16: NOP NOP)
+            // 8. Hide padlock in car customization shop item selection (0x7a5c16: NOP NOP)
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
 
-            // 8. Redirect shop show-padlock to hide-padlock (0x7a5c60 -> jmp 0x7a5c40)
+            // 9. Redirect shop show-padlock to hide-padlock (0x7a5c60 -> jmp 0x7a5c40)
             patch(0x7a5c60, new byte[] { 0xe9, 0xdb, 0xff, 0xff, 0xff });
 
             return true;
