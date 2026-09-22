@@ -42,20 +42,20 @@ public class VPNMemoryPatcher {
             // 3. Skip Prologue / Ambush (DDay) races -> Fall directly into Safehouse State 2 setup (0x5a3a47 -> NOP NOP)
             patch(0x5a3a47, new byte[] { 0x90, 0x90 });
 
-            // 4. Force Sonny #15 setup and clean return into Safehouse (0x5a3a6c -> NOP x 6)
-            patch(0x5a3a6c, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+            // 4. Force Sonny #15 setup and clean jump to save initialization (calls 0x666fe0 / 0x6596e0 at 0x5a3b30, fixing autosave)
+            patch(0x5a3a66, new byte[] { 0xc6, 0x46, 0x08, 0x0f, 0xe9, 0xc1, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90 });
 
-            // 5. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0 -> jmp short 0x51fdd3)
-            patch(0x51fdc0, new byte[] { 0xeb, 0x11 });
+            // 5. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0: NOP NOP falls through to 0x514cc0 HIDE PADLOCK)
+            patch(0x51fdc0, new byte[] { 0x90, 0x90 });
 
-            // 6. Remove orange padlock from Safehouse milestones creation (0x51fe86 -> jmp 0x51fea3)
-            patch(0x51fe86, new byte[] { 0xeb, 0x1b, 0x90, 0x90, 0x90, 0x90 });
+            // 6. Hide milestone orange padlock icon on thumbnail cards in Safehouse list (0x52fefb: NOP NOP falls through to 0x514cc0 HIDE PADLOCK)
+            patch(0x52fefb, new byte[] { 0x90, 0x90 });
 
-            // 7. Unlock shop customization for all cars including BMW M3 GTR (0x7a5c10 -> jmp 0x7a5c27)
-            patch(0x7a5c10, new byte[] { 0xeb, 0x15 });
+            // 7. Hide padlock in car customization shop item selection (0x7a5c16: NOP NOP)
+            patch(0x7a5c16, new byte[] { 0x90, 0x90 });
 
-            // 8. Hide shop locked padlock icon (0x7a5c40 -> jmp 0x7a5c60)
-            patch(0x7a5c40, new byte[] { 0xeb, 0x1e });
+            // 8. Redirect shop show-padlock to hide-padlock (0x7a5c60 -> jmp 0x7a5c40)
+            patch(0x7a5c60, new byte[] { 0xe9, 0xdb, 0xff, 0xff, 0xff });
 
             return true;
         } catch {
@@ -92,7 +92,7 @@ while ($true) {
                 $ok = [VPNMemoryPatcher]::Apply($p.Id)
                 if ($ok) {
                     [void]$patchedPids.Add($p.Id)
-                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15 ve Hero BMW M3 GTR aktif."
+                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15, Hero BMW M3 GTR ve Otomatik Kayit aktif."
                 }
             }
         }
