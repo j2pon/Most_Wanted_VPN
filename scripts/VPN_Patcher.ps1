@@ -85,11 +85,10 @@ Log-Message "VPN_Patcher aktif. speed.exe bekleniyor..."
 while ($true) {
     try {
         $procs = @(Get-Process speed -ErrorAction SilentlyContinue)
-        $activePids = [System.Collections.Generic.HashSet[int]]::new()
+        $activeIds = @($procs | ForEach-Object { $_.Id })
         foreach ($p in $procs) {
-            [void]$activePids.Add($p.Id)
             if (-not $patchedPids.Contains($p.Id)) {
-                Start-Sleep -Milliseconds 250
+                Start-Sleep -Milliseconds 350
                 $ok = [VPNMemoryPatcher]::Apply($p.Id)
                 if ($ok) {
                     [void]$patchedPids.Add($p.Id)
@@ -97,7 +96,10 @@ while ($true) {
                 }
             }
         }
-        [void]$patchedPids.RemoveWhere([Predicate[int]]{ param($id) -not $activePids.Contains($id) })
+        $toRemove = @($patchedPids | Where-Object { $_ -notin $activeIds })
+        foreach ($id in $toRemove) {
+            [void]$patchedPids.Remove($id)
+        }
     } catch {}
     Start-Sleep -Milliseconds 500
 }

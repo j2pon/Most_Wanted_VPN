@@ -31,7 +31,7 @@ echo  [1] Oyunu Başlat (speed.exe)
 echo  [2] Grafik Modunu Değiştir (DXVK Vulkan ^<--^> DirectX 9 / Discord)
 echo  [3] Tüm Saveleri Eşitle ve Geri Getir (MuratVPN, VPN, VPN_Kopru)
 echo  [4] Kaze (#7) Profilini Yükle (Baron Geçilmiş - Kaze Yarışları)
-echo  [5] Başlangıç Profilini Yükle (Razor #15 ^& BMW M3 GTR)
+echo  [5] Başlangıç Profilini Yükle (Sonny #15 ^& BMW M3 GTR)
 echo  [6] Final Köprü Kaçışı Profilini Yükle (Blacklist #1 Zaferi)
 echo  [7] Hikaye ve Kısayol Rehberini Aç
 echo  [8] Çıkış
@@ -156,7 +156,7 @@ goto MENU
 :YUKLE_BASLANGIC
 cls
 echo ====================================================================
-echo  Baslangic Save Profili Yukleniyor (Razor #15 ^& BMW M3 GTR)...
+echo  Baslangic Save Profili Yukleniyor (Sonny #15 ^& BMW M3 GTR)...
 echo ====================================================================
 echo.
 if not exist "save_baslangic\MuratVPN\MuratVPN" (
@@ -175,15 +175,22 @@ if not exist "%USERPROFILE%\Documents\NFS Most Wanted\VPN" mkdir "%USERPROFILE%\
 
 :: Kopyala
 copy /y "save_baslangic\MuratVPN\MuratVPN" "save\NFS Most Wanted\MuratVPN\MuratVPN" >nul
-copy /y "save_baslangic\MuratVPN\MuratVPN" "save\NFS Most Wanted\VPN\VPN" >nul
 copy /y "save_baslangic\MuratVPN\MuratVPN" "save\MuratVPN\MuratVPN" >nul
-copy /y "save_baslangic\MuratVPN\MuratVPN" "save\VPN\VPN" >nul
 copy /y "save_baslangic\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\MuratVPN\MuratVPN" >nul
-copy /y "save_baslangic\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\VPN\VPN" >nul
+
+if exist "save_baslangic\VPN\VPN" (
+    copy /y "save_baslangic\VPN\VPN" "save\NFS Most Wanted\VPN\VPN" >nul
+    copy /y "save_baslangic\VPN\VPN" "save\VPN\VPN" >nul
+    copy /y "save_baslangic\VPN\VPN" "%USERPROFILE%\Documents\NFS Most Wanted\VPN\VPN" >nul
+) else (
+    copy /y "save_baslangic\MuratVPN\MuratVPN" "save\NFS Most Wanted\VPN\VPN" >nul
+    copy /y "save_baslangic\MuratVPN\MuratVPN" "save\VPN\VPN" >nul
+    copy /y "save_baslangic\MuratVPN\MuratVPN" "%USERPROFILE%\Documents\NFS Most Wanted\VPN\VPN" >nul
+)
 
 echo [+] Baslangic profili basariyla tum kayit konumlarina yuklendi!
-echo     - Garajda BMW M3 GTR hazir.
-echo     - Blacklist #15 Razor sizi bekliyor!
+echo     - Garajda ikonik Gumus-Mavi BMW M3 GTR hazir.
+echo     - Blacklist #15 Sonny yarislari ve kilometre taslari sizi bekliyor!
 echo.
 echo Menuye donmek icin bir tusa basin...
 pause >nul
