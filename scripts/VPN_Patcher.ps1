@@ -36,7 +36,7 @@ public class VPNMemoryPatcher {
             patch(0x5a39aa, new byte[] { 0x90, 0x90 });
             patch(0x5a39b2, new byte[] { 0x90, 0x90 });
 
-            // 2. Skip Cobalt SS BONUS_GT2 (16 NOPs at 0x5a39d1) -> ONLY BMW M3 GTR in garage
+            // 2. Skip Cobalt SS BONUS_GT2 (16 NOPs at 0x5a39d1) -> ONLY Hero BMW M3 GTR in garage
             patch(0x5a39d1, new byte[] { 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90 });
 
             // 3. Skip Prologue / Ambush (DDay) races (0x5a3a47 -> NOP je 0x5a3a7c) -> Enter Safehouse directly
@@ -45,17 +45,20 @@ public class VPNMemoryPatcher {
             // 4. Ensure rival Sonny #15 is set (0x5a3a6c -> NOP je 0x5a3b4e)
             patch(0x5a3a6c, new byte[] { 0x90, 0x90 });
 
-            // 5. Remove orange padlock from Safehouse milestones (0x51fe86 -> jmp 0x51fea3)
+            // 5. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0 -> jmp short 0x51fdd3)
+            patch(0x51fdc0, new byte[] { 0xeb, 0x11 });
+
+            // 6. Remove orange padlock from Safehouse milestones creation (0x51fe86 -> jmp 0x51fea3)
             patch(0x51fe86, new byte[] { 0xeb, 0x1b, 0x90, 0x90, 0x90, 0x90 });
 
-            // 6. Unlock shop customization for all cars including BMW M3 GTR (0x7a5c10 -> jmp 0x7a5c27)
+            // 7. Unlock shop customization for all cars including BMW M3 GTR (0x7a5c10 -> jmp 0x7a5c27)
             patch(0x7a5c10, new byte[] { 0xeb, 0x15 });
 
-            // 7. Hide shop locked padlock icon (0x7a5c40 -> jmp 0x7a5c60)
+            // 8. Hide shop locked padlock icon (0x7a5c40 -> jmp 0x7a5c60)
             patch(0x7a5c40, new byte[] { 0xeb, 0x1e });
 
-            // 8. Set dev skip intro flags
-            patch(0x926125, new byte[] { 0x01, 0x01 });
+            // 9. Keep dev skip flags at 0 to ensure Sonny's races/milestones are 100% fresh (uncompleted)
+            patch(0x926125, new byte[] { 0x00, 0x00 });
 
             return true;
         } finally {
