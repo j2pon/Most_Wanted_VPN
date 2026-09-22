@@ -20,21 +20,26 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 ## 2. Düzeltilen Sorunlar ve Teknik Detayları
 
-### A. BMW M3 GTR Rengi ve Kaplaması (Gümüş - Çift Mavi Çizgili İkonik Görünüm)
+### A. BMW M3 GTR Rengi ve Kaplaması (Gümüş Gövde & Çift Kraliyet Mavisi Çizgili Efsane Hero Modeli)
 
-- **Sorunun Nedeni:**
-  - `GLOBALB.BUN` ve `GlobalB.lzc` dosyalarında BMW ön ayar kayıtlarında (`M3GTRCAREERSTART`, `E3_DEMO_BMW`, `CE_GTRSTREET`) boya slotu (Slot 76 / Veri dizininde index 82) sıfırlandığında (`0x00000000`), oyun araca hiçbir boya partı yükleyemez (`0xffff` / 65535).
-  - NFSMW shader motoru, boya tanımlanmadığında aracı varsayılan olarak **KIRMIZI** boyar.
-  - Daha önce sarı/siyah görünmesinin nedeni ise sarı/altın tonlu `METAL_L1_COLOR41` (`0xc7f288d1`) veya koyu swatcher kullanılmasıydı.
-- **Doğru İkonik Hero BMW Parça Konfigürasyonu:**
-  - **Slot 70:** `0x1d4df540` (`BMWM3GTRE46_BODY` - Orijinal Gövde/Kaput)
-  - **Slot 71:** `0xa0568921` (`BMWM3GTRE46_STYLE01` - Çift Mavi Çizgili İkonik Vinil)
-  - **Slot 76 (Save dosyası Part Index 3688 / GlobalB Index 82):** `0xc7f2884e` (`METAL_L1_COLOR02` - Challenge Series #68'deki Orijinal Metalik Gümüş Boya)
-  - **Slot 77:** `0xe9886d54` (Cam Filmi)
-  - **Slot 79:** `0xd0561e8c` (Gümüş BBS Jant)
-  - **Slot 80:** `0xd0561e8e` (Gümüş BBS Jant)
+- **Sorunun Nedeni (Düz Gri Görünme Sebebi):**
+  - BMW M3 GTR'ın efsanevi çift çizgili kaplaması (`BMWM3GTRE46_STYLE01`), 4 renk katmanına sahip bir vinildir.
+  - Önceki yapılandırmada Slot 72 (Vinil 1. Rengi), 146 numaralı palet rengi olan `5245` (`0x0cecd66a` - Beyaz/Açık Gümüş) seçiliydi.
+  - Gövde taban boyası (Slot 76) `METAL_L1_COLOR02` (`3688` / `0xc7f2884e`) gümüş metalik yapıldığında, üzerindeki beyaz vinil çizgileri gümüş gövdeyle tamamen iç içe geçip kaynaşmış ve araba tek renk **DÜZ GRİ** görünmüştür.
+  - Razor'un prologda bizden aldığı ve oyunun kapağındaki efsanevi modelde çizgiler koyu/kraliyet mavisidir.
+- **Doğru İkonik Hero BMW Parça ve Renk Konfigürasyonu:**
+  - **Slot 70:** `5243` (`0x1d4df540` - `BMWM3GTRE46_BODY` - Orijinal GTR Gövde Kiti, Kaput Izgaraları ve Yan Egzozlar)
+  - **Slot 71:** `5244` (`0xa0568921` - `BMWM3GTRE46_STYLE01` - Çift Yarış Çizgisi Vinili)
+  - **Slot 72:** `5249` (`0x655c846e` - Vinil 1. Rengi: Parlak Kraliyet Mavisi / Royal Blue Swatch)
+  - **Slot 73:** `5257` (`0x3b786fef` - Vinil 2. Rengi: Koyu Lacivert / Navy Blue Swatch)
+  - **Slot 74:** `5264` (`0x3b786fef` - Vinil 3. Rengi: Koyu Lacivert Detay Çizgisi)
+  - **Slot 75:** `5270` (`0x655c846e` - Vinil 4. Rengi: Mavi Vurgu)
+  - **Slot 76:** `3688` (`0xc7f2884e` - `METAL_L1_COLOR02` - Orijinal Metalik Gümüş Gövde Boyası)
+  - **Slot 77:** `4545` (`0xe9886d54` - Orijinal Açık Cam Filmi)
+  - **Slot 79:** `3809` (`0xd0561e8c` - Orijinal BBS Ön Jant)
+  - **Slot 80:** `3811` (`0xd0561e8e` - Orijinal BBS Arka Jant)
 - **Uygulanan Yerler:**
-  - `GLOBAL/GLOBALB.BUN` ve `GLOBAL/GlobalB.lzc`
+  - `GLOBAL/GLOBALB.BUN` ve `GLOBAL/GlobalB.lzc` (`M3GTRCAREERSTART`, `E3_DEMO_BMW`, `CE_GTRSTREET` kayıtları)
   - `github/GLOBAL/GLOBALB.BUN` ve `github/GLOBAL/GlobalB.lzc`
   - `save/`, `save_baslangic/`, `save_kaze/` ve `Belgeler/NFS Most Wanted/` altındaki tüm 32 adet save dosyasındaki Car 00, Car 29 ve Car 30 kayıtları.
   - Aktif oyun oturumu (PID 2884) RAM belleği.
@@ -74,29 +79,31 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 ---
 
-### C. Milestone (Kilometre Taşları) Kilit Simgeleri
+### C. Milestone (Kilometre Taşları) Simgeleri (Sıfır Kilit, Sıfır Önceden Tik, Tamamlandıkça Gelen Tik)
 
-- **Sorunun Nedeni:**
-  - SafeHouse Milestones ekranı oluşturulurken (`0x547c30` döngüsü), oyun ilk başta her `MEDAL_THUMB` için kilit simgesini görünür kılar.
-  - Ardından `0x547d38` adresinde `[ebx + 0x17]` (is_unlocked) kontrolü yapar. Eğer kilitliyse (`je 0x547daa`), kilit gizleme çağrısını (`0x547d65: call 0x514cc0`) atlar ve kilit simgesi ekranda kalır.
-  - Benzer şekilde menü gezinmesinde (`0x52fef3`), Blacklist listesinde (`0x52f55b`) ve Milestone kontrolünde (`0x51fdba`) kilit gösterme çağrıları tetiklenir.
-- **Yapılan RAM Yamaları:**
-  1. **SafeHouse Milestones Ana Render Döngüsü (`0x547d38` - 7 Bayt):**
-     - Orijinal: `8a 43 17 84 c0 74 6b` (`mov al, [ebx+0x17]; test al, al; je 0x547daa`)
-     - Yama: `b0 01 90 84 c0 90 90` (`mov al, 1; nop; test al, al; nop; nop`)
-     - Etki: Tüm milestone kartlarında kilit simgesi anında gizlenir (`call 0x514cc0`).
-  2. **SafeHouse Milestones Seçim Gezinmesi (`0x52fef3` - 5 Bayt):**
-     - Orijinal: `8a 43 17 84 c0` (`mov al, [ebx+0x17]; test al, al`)
-     - Yama: `b0 01 90 84 c0` (`mov al, 1; nop; test al, al`)
-     - Etki: Liste üzerinde gezinirken kilit açılmaz, açık kabul edilir.
-  3. **Blacklist Menüsü Milestone Listesi (`0x52f55b` - 2 Bayt):**
-     - Orijinal: `75 0f` (`jne 0x52f56c`)
-     - Yama: `eb 0f` (`jmp 0x52f56c`)
-     - Etki: `0x514c70` (kilit göster) çağrısını doğrudan atlayarak `0x514cc0` (kilit gizle) çağrısına yönlendirir.
-  4. **Milestone Kilit Kontrolü 2 (`0x51fdba` - 8 Bayt):**
-     - Orijinal: `8a 47 17 84 c0 5e 74 11`
-     - Yama: `b0 01 90 84 c0 5e 90 90`
-     - Etki: Kilit simgesi gösterme çağrısını devre dışı bırakır.
+- **Sorunun Nedeni (Tüm Taşlarda Önceden Tik Görünme Sebebi):**
+  - SafeHouse Milestones döngüsünde (`0x547c80`–`0x547dae`), oyun her kart için önce kilit alt-nesnesini görünür kılar (`0x547cb1: call 0x514c70`).
+  - Ardından `0x547ccb` adresinde `[ebx + 0x16]` (is_completed) kontrolü yapar.
+  - Eğer tamamlanmamışsa `0x547d38` (is_unlocked) kontrolüne dalar. Önceki yamada bu kilit açılmış sayılsın diye `al = 1` zorlandığında, oyun kod akışı EA'nın kilit açma dalına düşmüş ve `0x547d96` adresinde `ecx = 0x28feadd` (`CHECK` = Yeşil Tik simgesi) atayarak tamamlanmamış tüm taşların üzerine **TİK** basmıştır.
+  - Kullanıcının kesin talebi: **"Orada hiçbir ikon olmayacak (ne kilit ne tik), oyuncu görevi tamamladıkça tik gelecek."**
+- **Uygulanan Kusursuz Mantık:**
+  1. **SafeHouse Milestones Kilit Gizleme (`0x547cb1` - 5 Bayt):**
+     - Orijinal: `e8 ba cf fc ff` (`call 0x514c70` - Kilidi Göster)
+     - Yama: `e8 0a d0 fc ff` (`call 0x514cc0` - Kilidi Gizle)
+     - Etki: Kartlar oluşturulurken kilit nesnesi hiçbir zaman gösterilmez.
+  2. **SafeHouse Milestones Tik Atlaması (`0x547d70` - 4 Bayt):**
+     - Orijinal: `85 c0 74 36` (`test eax, eax; je 0x547daa`)
+     - Yama: `eb 38 90 90` (`jmp 0x547daa; 2x nop`)
+     - Etki: `0x547d65` çağrısı `MEDAL_THUMB` simge kutusunu gizledikten hemen sonra `0x547daa`'ya atlar. Asla `0x28feadd` (`CHECK`) atanmaz. Görev tamamlanmamışsa kart üzerinde **SIFIR İKON (TERTEMİZ BOŞ)** görünür.
+  3. **Tamamlandıkça Gelme Garantisi:**
+     - Oyuncu bir milestone görevini bitirdiğinde `[ebx + 0x16] != 0` olur.
+     - Oyun `0x547cd0` atlamasını yapmaz, doğal tamamlama kodunu çalıştırır (`0x547d31: mov ecx, 0x18ed48` ve `or [eax+0x1c], 0x2400000`). Tamamlanan taşa tik/madalya simgesi eklenir ("yaptıkça gelir").
+  4. **SafeHouse İmleç Seçim Kartı Mantığı (`0x52fe64` ve `0x52ff2b`):**
+     - `0x52fe64` kilit gösterme çağrısı `call 0x514cc0` (gizle) ile değiştirildi.
+     - `0x52ff2b` adresi `eb 68 90 90` (`jmp 0x52ff95`) yapılarak imleçle seçilen kartın da tamamlanmamışsa tik göstermesi engellendi.
+  5. **Diğer Menü Kilit Gizlemeleri:**
+     - `0x51fdba` & `0x51fdd7`: Detay ekranı kilit kontrolü ve kilit gizleme.
+     - `0x52f55b`: Blacklist menüsü kilit göstermeyi atlama (`eb 0f`).
 
 ---
 
@@ -113,26 +120,31 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 | Offset / Adres | Orijinal Baytlar | Yeni Baytlar | Fonksiyon / Amaç |
 |---|---|---|---|
-| `0x547d38` | `8a 43 17 84 c0 74 6b` | `b0 01 90 84 c0 90 90` | SafeHouse Milestones kilit simgelerini gizleme |
-| `0x52fef3` | `8a 43 17 84 c0` | `b0 01 90 84 c0` | SafeHouse seçim esnasında kilit gizleme |
+| `0x547cb1` | `e8 ba cf fc ff` | `e8 0a d0 fc ff` | SafeHouse Milestones kilit nesnesi göstermeyi gizlemeye çevirme |
+| `0x547d70` | `85 c0 74 36` | `eb 38 90 90` | SafeHouse Milestones tamamlanmamışsa tik ikonunu atlama (sıfır ikon) |
+| `0x547d38` | `8a 43 17 84 c0 74 6b` | `b0 01 90 84 c0 90 90` | SafeHouse Milestones gizleme yoluna yönlendirme |
+| `0x52fe64` | `e8 07 4e fe ff` | `e8 57 4e fe ff` | SafeHouse seçim kartı kilit göstermeyi gizlemeye çevirme |
+| `0x52ff2b` | `85 c0 74 66` | `eb 68 90 90` | SafeHouse seçim kartı tamamlanmamışsa tik ikonunu atlama |
+| `0x52fef3` | `8a 43 17 84 c0` | `b0 01 90 84 c0` | SafeHouse seçim kartı gizleme yoluna yönlendirme |
 | `0x52f55b` | `75 0f` | `eb 0f` | Blacklist menüsü kilit göstermeyi atlama |
 | `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Genel Milestone kilit göstermeyi kapatma |
+| `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Detay ekranı kilit gizleme çağrısı |
 | `0x58e4b7` | `31 c0 89 44 24 10 89 46 30 88 46 34 89 46 3c 8b 46 10 68 b9 4f 56 14 50` | `31 c0 89 44 24 10 89 46 30 89 46 3c c6 46 34 01 68 b9 4f 56 14 ff 76 10` | Profil oluşturulunca Autosave açık (`[esi+0x34]=1`) |
 | `0x58e905` | `89 46 2c 8b 0d 14 5b 92 00 89 4e 2c 89 46 30 88 46 34` | `89 46 30 8b 0d 14 5b 92 00 89 4e 2c c6 46 34 01 90 90` | İkincil profil yapıcısında Autosave açık (`[esi+0x34]=1`) |
 | `0x7f53ed` | `0f 85 a1 00 00 00` | `eb 10 90 90 90 90` | Save dosyası kontrol baypası |
-| `GLOBALB Index 82` | `0x00000000` | `0xc7f2884e` | BMW M3 GTR Orijinal Gümüş Metalik Boya (`METAL_L1_COLOR02`) |
-| `Save Slot 76` | `0` veya `65535` | `3688` (`0x0e68`) | Save içindeki BMW M3 GTR Metalik Gümüş Parça Kodu |
+| `Save Slot 72..75`| `5245, 5252, 5259, 5266` | `5249, 5257, 5264, 5270` | BMW M3 GTR Çift Kraliyet Mavisi / Koyu Mavi Çizgiler |
+| `Save Slot 76` | `0` veya `65535` | `3688` (`0x0e68`) | BMW M3 GTR Metalik Gümüş Gövde Boyası (`METAL_L1_COLOR02`) |
 
 ---
 
-## 4. ASI Yamasının Çalışma Mantığı (`MWCrashFix.asi`)
+## 4. ASI Yamasının Çalışma Mantığı (`scripts/MWCrashFix.asi`)
 
-- `MWCrashFix.asi` içinde boş olan `.text` bölümünün sonundaki 207 baytlık alana (`VA 0x10001f38`) kompakt bir bellek kopyalama döngüsü yerleştirilmiştir.
-- `DllMain` (`0x10001249`) çağrısı buraya yönlendirilmiştir.
-- Çalışma sırası:
-  1. Orijinal kaza düzeltme yaması çağrılır (`call 0x10001050`).
-  2. `VirtualProtect(0x401000, 0x490000, PAGE_EXECUTE_READWRITE, &oldProtect)` çağrılarak `speed.exe`'nin kod alanı yazılabilir yapılır.
-  3. Yukarıdaki 7 adet yama tablodan okunarak `rep movsb` ile bellek adreslerine yazılır.
-  4. Registerlar geri yüklenir (`popal; pop ebp; ret`) ve oyun standart açılışına devam eder.
+- `MWCrashFix.asi` içinde `DllMain` (`0x10000649`), `0x10001338` adresine dallanır.
+- Konumdan Bağımsız Kodlama (Position-Independent Code - PIC) ile derlenmiştir:
+  1. `call $+5; pop ebx; and ebx, 0xffff0000`: DLL Windows tarafından hangi bellek tabanına (ImageBase) yüklenirse yüklensin anlık baz adres tespit edilir.
+  2. `VirtualProtect(0x401000, 0x490000, PAGE_EXECUTE_READWRITE, &oldProtect)` çağrılarak `speed.exe` kod alanı yazılabilir yapılır.
+  3. 12 adet kritik bellek yaması tablodan okunarak `rep movsb` ile tek seferde yazılır.
+  4. Orijinal CrashFix işlevi (`call 0x10000450`) çağrılır ve kayıtçı registerlar eksiksiz korunarak oyunun normal döngüsüne dönülür.
 
-Bu sayede oyun hangi klasörden veya doğrudan `speed.exe` üzerinden çalıştırılırsa çalıştırılsın, tüm yamalar otomatik ve anlık olarak devreye girer.
+Bu sayede harici arka plan işlemlerine gerek kalmadan, oyun ister masaüstünden ister doğrudan `speed.exe`'den başlatılsın tüm sistemler anında, hatasız ve kusursuz olarak çalışır.
+
