@@ -76,17 +76,13 @@ public class VPNMemoryPatcher {
             // 8c. Safehouse refresh loop: skip padlock texture, render flag and show call (0x5301bd: 75 16 -> eb 48)
             patch(0x5301bd, new byte[] { 0xeb, 0x48 });
 
-            // 9. CURSOR SELECTION CARD VISUALS:
+            // 9. CURSOR SELECTION CARD VISUALS (Crash-proof forward jump):
             // 9a. Cursor selection padlock show loop skip: jmp 0x52fe76 (0x52fe5f: 7e 15 -> eb 15)
             patch(0x52fe5f, new byte[] { 0xeb, 0x15 });
-            // 9b. Cursor selection padlock texture skip: jmp 0x52ff95 (0x52feec: b9 48 ed 18 00 eb 63 -> eb a7 90 90 90 90 90)
-            patch(0x52feec, new byte[] { 0xeb, 0xa7, 0x90, 0x90, 0x90, 0x90, 0x90 });
-            // 9c. Cursor selection fallback padlock skip: jmp 0x52ff95 (0x52ff6a: 85 c0 74 1c -> eb 29 90 90)
-            patch(0x52ff6a, new byte[] { 0xeb, 0x29, 0x90, 0x90 });
+            // 9b. Cursor selection skip lock texture & render: clean forward jmp 0x52ff95 (0x52fee6: 0f 85 a9 00 00 00 -> e9 aa 00 00 00 90)
+            patch(0x52fee6, new byte[] { 0xe9, 0xaa, 0x00, 0x00, 0x00, 0x90 });
 
-            // 10. Detail Card Lock Icon:
-            patch(0x51fdba, new byte[] { 0xb0, 0x01, 0x90, 0x84, 0xc0, 0x5e, 0x90, 0x90 });
-            patch(0x51fdc0, new byte[] { 0x90, 0x90 });
+            // 10. Detail Card Lock Icon: Redirect show call to 0x514cc0 (HIDE)
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
             // 11. Blacklist menu: Skip padlock
@@ -127,7 +123,6 @@ while ($true) {
         $activeIds = @($procs | ForEach-Object { $_.Id })
         foreach ($p in $procs) {
             if (-not $patchedPids.Contains($p.Id)) {
-                Start-Sleep -Milliseconds 350
                 $ok = [VPNMemoryPatcher]::Apply($p.Id)
                 if ($ok) {
                     [void]$patchedPids.Add($p.Id)
@@ -140,5 +135,5 @@ while ($true) {
             [void]$patchedPids.Remove($id)
         }
     } catch {}
-    Start-Sleep -Milliseconds 500
+    Start-Sleep -Milliseconds 100
 }
