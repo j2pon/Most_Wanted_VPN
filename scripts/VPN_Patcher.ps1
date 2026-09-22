@@ -36,22 +36,25 @@ public class VPNMemoryPatcher {
             patch(0x5a39aa, new byte[] { 0x90, 0x90 });
             patch(0x5a39b2, new byte[] { 0x90, 0x90 });
 
-            // 2. Add ONLY Hero BMW M3 GTR (M3GTRCAREERSTART) to garage and set as Active Car (0x5a39d1)
+            // 2. Add ONLY Hero BMW M3 GTR (E3_DEMO_BMW: 0x03a94520) to garage and set as Active Car (0x5a39d1)
+            // CRITICAL: Only set [esi] = active car slot. Do NOT touch CareerProfile+0xa8 here!
+            // 0x5a3a8f will correctly write the preset hash (0x03a94520) to CareerProfile+0xa8 later.
             patch(0x5a39d1, new byte[] {
-                0x68, 0x2c, 0xc4, 0xa3, 0x38, // push 0x38a3c42c (M3GTRCAREERSTART: Metallic Silver + Dual Stripes Hero Livery)
+                0x68, 0x20, 0x45, 0xa9, 0x03, // push 0x03a94520 (E3_DEMO_BMW: Iconic Hero BMW M3 GTR)
                 0x8b, 0xcf,                   // mov ecx, edi
                 0xe8, 0x43, 0x63, 0xff, 0xff, // call 0x599d20 (AddCar)
-                0x8b, 0x08,                   // mov ecx, [eax]
-                0x89, 0x0e,                   // mov [esi], ecx (Active car = BMW M3 GTR!)
-                0x89, 0x8f, 0x94, 0xfc, 0xff, 0xff, // mov [edi - 0x36c], ecx (UserProfile->mCareerProfile + 0xa8 = ecx)
-                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 // 10 NOPs (cleans out Cobalt SS addition)
+                0x85, 0xc0,                   // test eax, eax
+                0x74, 0x10,                   // je 0x5a39f1 (safe null check)
+                0x8b, 0x08,                   // mov ecx, [eax] (car slot value)
+                0x89, 0x0e,                   // mov [esi], ecx (CareerSettings->mActiveCar only)
+                0x90, 0x90, 0x90, 0x90, 0x90, 0x90, // 12 NOPs (fill remaining space)
+                0x90, 0x90, 0x90, 0x90, 0x90, 0x90
             });
 
-            // 3. Skip Prologue / Ambush (DDay) races (0x5a3a47 -> NOP je 0x5a3a7c) -> Enter Safehouse directly
-            patch(0x5a3a47, new byte[] { 0x90, 0x90 });
-
-            // 4. Ensure rival Sonny #15 is set (0x5a3a6c: 6x NOP je 0x5a3b4e - avoids FPU corruption)
-            patch(0x5a3a6c, new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+            // 3. Skip Prologue / Ambush (DDay) races -> Enter Safehouse directly (0x5a3a47: jmp 0x5a3a7c)
+            // After jmp, 0x5a3a7c computes bhash("E3_DEMO_BMW") = 0x03a94520 and 0x5a3a8f writes it
+            // to CareerProfile+0xa8 — Safehouse uses this hash to find and render the iconic BMW!
+            patch(0x5a3a47, new byte[] { 0xeb, 0x33 });
 
             // 5. Bypass save checksum mismatch / corruption check (0x7f53ed: je -> jmp 0x7f53ff)
             patch(0x7f53ed, new byte[] { 0xeb, 0x10, 0x90, 0x90, 0x90, 0x90 });
@@ -81,8 +84,9 @@ public class VPNMemoryPatcher {
             // 9b. Cursor selection padlock bypass -> ALWAYS execute is_completed check (0x52fe81: 74 6e -> eb 6e)
             patch(0x52fe81, new byte[] { 0xeb, 0x6e });
 
-            // 10. PHOTO TICKET / SPEED TRAP MILESTONE FIX (Event types 9 & 10 allowed in Safehouse milestone list):
-            patch(0x51f146, new byte[] { 0xeb, 0x1f, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
+            // 10. PHOTO TICKET / SPEED TRAP MILESTONE: DISABLED - types 9 & 10 lack valid handler
+            // in 0x56e010 switch table, causing crash in 0x5881c0 constructor when selected.
+            // patch(0x51f146, new byte[] { 0xeb, 0x1f, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 });
 
             // 11. Detail Card Lock Icon: Redirect show call to 0x514cc0 (HIDE)
             patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
@@ -93,6 +97,23 @@ public class VPNMemoryPatcher {
             // 13. Hide padlock in car customization shop item selection
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
             patch(0x7a5c60, new byte[] { 0xe9, 0xdb, 0xff, 0xff, 0xff });
+
+            // 14. MILESTONE MENU NULL GUARD (Crash fix at 0x5b15c4):
+            // Comparator callback dereferences [eax+0x10] without null check on eax.
+            // When milestone list contains uninitialized entries, eax=NULL -> crash.
+            patch(0x5b15c0, new byte[] {
+                0x8b, 0x44, 0x24, 0x04,  // mov eax, [esp+4]
+                0x85, 0xc0,              // test eax, eax
+                0x74, 0x10,              // je 0x5b15d8 (return true = skip)
+                0x8b, 0x50, 0x10,        // mov edx, [eax+0x10]
+                0x3b, 0x51, 0x04,        // cmp edx, [ecx+4]
+                0x75, 0x08,              // jne 0x5b15d8
+                0x89, 0x41, 0x08,        // mov [ecx+8], eax
+                0x30, 0xc0,              // xor al, al
+                0xc2, 0x04, 0x00,        // ret 4
+                0xb0, 0x01,              // mov al, 1
+                0xc2, 0x04, 0x00         // ret 4
+            });
 
             return true;
         } catch {

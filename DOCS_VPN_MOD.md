@@ -101,9 +101,9 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 |---|---|---|---|
 | `0x5a39aa` | `74 45` | `90 90` | Kariyer başlangıcı araba ekleme bayrak kontrolü baypası |
 | `0x5a39b2` | `74 3d` | `90 90` | Kariyer başlangıcı ikincil bayrak kontrolü baypası |
-| `0x5a39d1` | (Cobalt SS + BMW ekleme bloğu) | `68 2c c4 a3 38 ... 89 8f 94 fc ff ff ... 10x 90` | Garaja SADECE `M3GTRCAREERSTART` (`0x38a3c42c`) ekleyip aktif araç yapar, `CareerSettings` ve `UserProfile` (`+0xa8`) işaretçilerini eşitler (32 bayt) |
-| `0x5a3a47` | `74 33` | `90 90` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse'a girme |
-| `0x5a3a6c` | `0f 84 dc 00 00 00` | `90 90 90 90 90 90` | Rakip Sonny #15 kurulumunu zorlama ve FPU çökmesini önleme (6 bayt) |
+| `0x5a39d1` | (Cobalt SS + BMW ekleme bloğu) | `68 20 45 a9 03 ... 85 c0 74 10 8b 08 89 0e 89 8f 94 fc ff ff ... 6x 90` | Garaja SADECE `E3_DEMO_BMW` (`0x03a94520`) ekleyip aktif araç yapar, null kontrolü uygular, aktif aracı ve `UserProfile` (`+0xa8`) işaretçisini `0` olarak eşitler (32 bayt) |
+| `0x5a3a47` | `74 33` | `eb 33` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse yükleme fonksiyonuna zıplar (`jmp 0x5a3a7c`) |
+| `0x5a3a8f` | `89 81 a8 00 00 00` | `90 90 90 90 90 90` | Safehouse girişinde `CareerProfile + 0xa8` aktif araç indeksi üzerine preset hash yazılmasını önler; `0x56ecc0` araç indeksini (`0`) bularak Metalik Gümüş + Çift Mavi Çizgili efsanevi kaplamayı yükler |
 | `0x58e4c0` | `88 46 34` | `fe 46 34` | UserProfile kurucu 1: Autosave daima aktif (inc [esi+0x34]) |
 | `0x58e914` | `88 46 34` | `fe 46 34` | UserProfile kurucu 2: Autosave daima aktif (inc [esi+0x34]) |
 | `0x58e993` | `88 46 34` | `fe 46 34` | UserProfile kurucu 3: Autosave daima aktif (inc [esi+0x34]) |
