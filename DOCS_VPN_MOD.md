@@ -120,6 +120,12 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 | Offset / Adres | Orijinal Baytlar | Yeni Baytlar | Fonksiyon / Amaç |
 |---|---|---|---|
+| `0x5a39aa` | `74 45` | `90 90` | Kariyer başlangıcı araba ekleme bayrak kontrolünü baypas etme |
+| `0x5a39b2` | `74 3d` | `90 90` | Kariyer başlangıcı ikincil bayrak kontrolünü baypas etme |
+| `0x5a39d1` | (Cobalt SS BONUS_GT2) | `16x 90` (NOP) | Garaja Cobalt SS eklenmesini atlayıp sadece BMW M3 GTR bırakma |
+| `0x5a3a47` | `74 33` | `90 90` | Prologue/Ambush yarışlarını atlayıp doğrudan Safehouse'a girme |
+| `0x5a3a6c` | `74 e0` | `90 90` | Rakip Sonny #15 kurulumunu zorlama ve temiz fonksiyondan çıkış |
+| `0x926125` | `00 00` | `01 01` | Dev skip intro bayraklarını aktif etme |
 | `0x547cb1` | `e8 ba cf fc ff` | `e8 0a d0 fc ff` | SafeHouse Milestones kilit nesnesi göstermeyi gizlemeye çevirme |
 | `0x547d70` | `85 c0 74 36` | `eb 38 90 90` | SafeHouse Milestones tamamlanmamışsa tik ikonunu atlama (sıfır ikon) |
 | `0x547d38` | `8a 43 17 84 c0 74 6b` | `b0 01 90 84 c0 90 90` | SafeHouse Milestones gizleme yoluna yönlendirme |
@@ -129,8 +135,6 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 | `0x52f55b` | `75 0f` | `eb 0f` | Blacklist menüsü kilit göstermeyi atlama |
 | `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Genel Milestone kilit göstermeyi kapatma |
 | `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Detay ekranı kilit gizleme çağrısı |
-| `0x58e4b7` | `31 c0 89 44 24 10 89 46 30 88 46 34 89 46 3c 8b 46 10 68 b9 4f 56 14 50` | `31 c0 89 44 24 10 89 46 30 89 46 3c c6 46 34 01 68 b9 4f 56 14 ff 76 10` | Profil oluşturulunca Autosave açık (`[esi+0x34]=1`) |
-| `0x58e905` | `89 46 2c 8b 0d 14 5b 92 00 89 4e 2c 89 46 30 88 46 34` | `89 46 30 8b 0d 14 5b 92 00 89 4e 2c c6 46 34 01 90 90` | İkincil profil yapıcısında Autosave açık (`[esi+0x34]=1`) |
 | `0x7f53ed` | `0f 85 a1 00 00 00` | `eb 10 90 90 90 90` | Save dosyası kontrol baypası |
 | `Save Slot 72..75`| `5245, 5252, 5259, 5266` | `5249, 5257, 5264, 5270` | BMW M3 GTR Çift Kraliyet Mavisi / Koyu Mavi Çizgiler |
 | `Save Slot 76` | `0` veya `65535` | `3688` (`0x0e68`) | BMW M3 GTR Metalik Gümüş Gövde Boyası (`METAL_L1_COLOR02`) |
