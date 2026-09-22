@@ -39,28 +39,27 @@ public class VPNMemoryPatcher {
             // 2. Skip Cobalt SS BONUS_GT2 (16 NOPs at 0x5a39d1) -> ONLY Hero BMW M3 GTR in garage
             patch(0x5a39d1, new byte[] { 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90, 0x90,0x90,0x90,0x90 });
 
-            // 3. Skip Prologue / Ambush (DDay) races (0x5a3a47 -> NOP je 0x5a3a7c) -> Enter Safehouse directly
-            patch(0x5a3a47, new byte[] { 0x90, 0x90 });
+            // 3. Skip Prologue / Ambush (DDay) races -> Jump straight to Safehouse setup (EB 29 = jmp 0x5a3a72)
+            patch(0x5a3a47, new byte[] { 0xeb, 0x29 });
 
-            // 4. Ensure rival Sonny #15 is set (0x5a3a6c -> NOP je 0x5a3b4e)
-            patch(0x5a3a6c, new byte[] { 0x90, 0x90 });
-
-            // 5. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0 -> jmp short 0x51fdd3)
+            // 4. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0 -> jmp short 0x51fdd3)
             patch(0x51fdc0, new byte[] { 0xeb, 0x11 });
 
-            // 6. Remove orange padlock from Safehouse milestones creation (0x51fe86 -> jmp 0x51fea3)
+            // 5. Remove orange padlock from Safehouse milestones creation (0x51fe86 -> jmp 0x51fea3)
             patch(0x51fe86, new byte[] { 0xeb, 0x1b, 0x90, 0x90, 0x90, 0x90 });
 
-            // 7. Unlock shop customization for all cars including BMW M3 GTR (0x7a5c10 -> jmp 0x7a5c27)
+            // 6. Unlock shop customization for all cars including BMW M3 GTR (0x7a5c10 -> jmp 0x7a5c27)
             patch(0x7a5c10, new byte[] { 0xeb, 0x15 });
 
-            // 8. Hide shop locked padlock icon (0x7a5c40 -> jmp 0x7a5c60)
+            // 7. Hide shop locked padlock icon (0x7a5c40 -> jmp 0x7a5c60)
             patch(0x7a5c40, new byte[] { 0xeb, 0x1e });
 
-            // 9. Keep dev skip flags at 0 to ensure Sonny's races/milestones are 100% fresh (uncompleted)
+            // 8. Keep dev skip flags at 0 to ensure Sonny's races/milestones are 100% fresh (uncompleted)
             patch(0x926125, new byte[] { 0x00, 0x00 });
 
             return true;
+        } catch {
+            return false;
         } finally {
             CloseHandle(h);
         }
@@ -72,22 +71,34 @@ try {
     Add-Type -TypeDefinition $code -Language CSharp
 } catch {}
 
+$patchedPids = [System.Collections.Generic.HashSet[int]]::new()
 $logPath = Join-Path $PSScriptRoot "patcher.log"
-$dateStr = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
-"[$dateStr] VPN_Patcher baslatildi. speed.exe bekleniyor..." | Out-File -FilePath $logPath -Encoding utf8
 
-# Poll for speed.exe for up to 30 seconds
-for ($i = 0; $i -lt 60; $i++) {
-    $p = Get-Process speed -ErrorAction SilentlyContinue | Select-Object -First 1
-    if ($p) {
-        Start-Sleep -Milliseconds 800
-        $ok = [VPNMemoryPatcher]::Apply($p.Id)
-        if ($ok) {
-            "[$dateStr] [+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Tum VPN mod ozellikleri devrede." | Out-File -FilePath $logPath -Append -Encoding utf8
-        } else {
-            "[$dateStr] [-] speed.exe acilamadi." | Out-File -FilePath $logPath -Append -Encoding utf8
+function Log-Message($msg) {
+    $dateStr = (Get-Date).ToString("yyyy-MM-dd HH:mm:ss")
+    "[$dateStr] $msg" | Out-File -FilePath $logPath -Append -Encoding utf8
+}
+
+Log-Message "VPN_Patcher aktif. speed.exe bekleniyor..."
+
+# Continuous monitoring loop
+while ($true) {
+    try {
+        $procs = Get-Process speed -ErrorAction SilentlyContinue
+        if ($procs) {
+            foreach ($p in $procs) {
+                if (-not $patchedPids.Contains($p.Id)) {
+                    Start-Sleep -Milliseconds 600
+                    $ok = [VPNMemoryPatcher]::Apply($p.Id)
+                    if ($ok) {
+                        $patchedPids.Add($p.Id)
+                        Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15 ve Hero BMW M3 GTR aktif."
+                    }
+                }
+            }
         }
-        break
-    }
-    Start-Sleep -Milliseconds 500
+        $currentIds = if ($procs) { @($procs | ForEach-Object { $_.Id }) } else { @() }
+        [void]$patchedPids.RemoveWhere({ -not ($currentIds -contains $_) })
+    } catch {}
+    Start-Sleep -Seconds 1
 }

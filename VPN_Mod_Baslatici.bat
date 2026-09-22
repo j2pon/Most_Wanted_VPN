@@ -64,10 +64,13 @@ if not exist "speed.exe" (
     pause
     goto MENU
 )
-echo [i] VPN Yamalari ve speed.exe baslatiliyor...
-if exist "scripts\VPN_Patcher.ps1" (
+echo [i] VPN Bellek Yamalayicisi arka planda aktif ediliyor...
+if exist "scripts\VPN_Watcher.vbs" (
+    start "" wscript.exe //B "scripts\VPN_Watcher.vbs"
+) else if exist "scripts\VPN_Patcher.ps1" (
     start "" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "scripts\VPN_Patcher.ps1"
 )
+echo [i] speed.exe baslatiliyor...
 start "" "speed.exe"
 timeout /t 3 >nul
 exit
