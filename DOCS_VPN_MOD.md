@@ -137,14 +137,14 @@ Bu doküman, Need for Speed Most Wanted (VPN Edition) modunda yapılan tüm bell
 
 ---
 
-## 4. ASI Yamasının Çalışma Mantığı (`scripts/MWCrashFix.asi`)
+## 4. Bellek Yamasının Çalışma Mantığı ve Smart App Control Uyumluluğu
 
-- `MWCrashFix.asi` içinde `DllMain` (`0x10000649`), `0x10001338` adresine dallanır.
-- Konumdan Bağımsız Kodlama (Position-Independent Code - PIC) ile derlenmiştir:
-  1. `call $+5; pop ebx; and ebx, 0xffff0000`: DLL Windows tarafından hangi bellek tabanına (ImageBase) yüklenirse yüklensin anlık baz adres tespit edilir.
-  2. `VirtualProtect(0x401000, 0x490000, PAGE_EXECUTE_READWRITE, &oldProtect)` çağrılarak `speed.exe` kod alanı yazılabilir yapılır.
-  3. 12 adet kritik bellek yaması tablodan okunarak `rep movsb` ile tek seferde yazılır.
-  4. Orijinal CrashFix işlevi (`call 0x10000450`) çağrılır ve kayıtçı registerlar eksiksiz korunarak oyunun normal döngüsüne dönülür.
+- **Windows 11 Smart App Control (SAC) / Hata Kodu 0xc0e90002 & 4551 Önlemi:**
+  - Windows 11 işletim sisteminde Smart App Control ve Defender Bütünlük Koruması devrede olduğunda, `MWCrashFix.asi` gibi bilinen/itibar listesinde yer alan sistem eklentilerinin disk üzerindeki baytları doğrudan değiştirildiğinde Windows `0xc0e90002` (*STATUS_SYSTEM_INTEGRITY_POLICY_VIOLATION*) ve `Error: 4551` (*ERROR_INVALID_IMAGE_HASH / Bozuk Görüntü*) hatası vererek eklentinin yüklenmesini engeller.
+  - Bu nedenle `MWCrashFix.asi` disk üzerinde **%100 orijinal, tertemiz ve el değmemiş** durumuna geri getirilmiştir. Böylece oyun açılışında hiçbir uyarı veya bozuk görüntü hatası çıkmaz.
 
-Bu sayede harici arka plan işlemlerine gerek kalmadan, oyun ister masaüstünden ister doğrudan `speed.exe`'den başlatılsın tüm sistemler anında, hatasız ve kusursuz olarak çalışır.
-
+- **Kalıcı ve Güvenli Çalışma: `VPN_Watcher.vbs` & `VPN_Patcher.ps1`:**
+  - Tüm bellek yamaları (Sıfır ikon milestone gizleme, Sony #15 kariyer akışı, BMW ikonik mavi-gümüş tasarımı, Autosave ve bozuk save engeli) Windows Kernel API (`OpenProcess`, `VirtualProtectEx`, `WriteProcessMemory`) aracılığıyla oyun başladığı anda RAM üzerinde uygulanır.
+  - Windows Başlangıç (`shell:startup`) klasörüne entegre edilen hafif `VPN_Watcher_Auto.vbs` servisi arka planda 0 CPU ile bekler.
+  - Kullanıcı oyunu ister masaüstü kısayolundan, ister `github` klasöründen, ister doğrudan `speed.exe`'ye çift tıklayarak başlatsın; `VPN_Patcher` işlemi 350ms içinde yakalayıp 12 kritik bellek yamasını otomatik olarak RAM'e basar.
+  - `speed.exe` dosyası diskte orijinal kalır, hiçbir güvenlik uyarısı verilmez ve tüm modlar sıfır gecikmeyle devreye girer.
