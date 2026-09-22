@@ -64,7 +64,10 @@ if not exist "speed.exe" (
     pause
     goto MENU
 )
-echo [i] Oyun arka planda baslatildi. Iyi oyunlar!
+echo [i] VPN Yamalari ve speed.exe baslatiliyor...
+if exist "scripts\VPN_Patcher.ps1" (
+    start "" /min powershell -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "scripts\VPN_Patcher.ps1"
+)
 start "" "speed.exe"
 timeout /t 3 >nul
 exit
