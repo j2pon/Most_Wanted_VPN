@@ -45,11 +45,13 @@ public class VPNMemoryPatcher {
             // 4. Force Sonny #15 setup and clean jump to save initialization (calls 0x666fe0 / 0x6596e0 at 0x5a3b30, fixing autosave)
             patch(0x5a3a66, new byte[] { 0xc6, 0x46, 0x08, 0x0f, 0xe9, 0xc1, 0x00, 0x00, 0x00, 0x90, 0x90, 0x90 });
 
-            // 5. Hide milestone orange padlock icon in Safehouse menu (0x51fdc0: NOP NOP falls through to 0x514cc0 HIDE PADLOCK)
+            // 5. Hide milestone orange padlock icon in Safehouse menu (NOP NOP + redirect show call to hide call)
             patch(0x51fdc0, new byte[] { 0x90, 0x90 });
+            patch(0x51fdd7, new byte[] { 0xe8, 0xe4, 0x4e, 0xff, 0xff }); // call 0x514cc0 HIDE
 
-            // 6. Hide milestone orange padlock icon on thumbnail cards in Safehouse list (0x52fefb: NOP NOP falls through to 0x514cc0 HIDE PADLOCK)
+            // 6. Hide milestone orange padlock icon on thumbnail cards in Safehouse list (NOP NOP + redirect show call to hide call)
             patch(0x52fefb, new byte[] { 0x90, 0x90 });
+            patch(0x52ff8d, new byte[] { 0xe8, 0x2e, 0x4d, 0xfe, 0xff }); // call 0x514cc0 HIDE
 
             // 7. Hide padlock in car customization shop item selection (0x7a5c16: NOP NOP)
             patch(0x7a5c16, new byte[] { 0x90, 0x90 });
@@ -92,7 +94,7 @@ while ($true) {
                 $ok = [VPNMemoryPatcher]::Apply($p.Id)
                 if ($ok) {
                     [void]$patchedPids.Add($p.Id)
-                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15, Hero BMW M3 GTR ve Otomatik Kayit aktif."
+                    Log-Message "[+] speed.exe (PID: $($p.Id)) basariyla yamalandi! Safehouse, Sonny #15, Hero BMW M3 GTR, Kilitler ve Otomatik Kayit aktif."
                 }
             }
         }
