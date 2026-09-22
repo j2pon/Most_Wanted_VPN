@@ -112,10 +112,7 @@ Kullanıcının kesin kuralı: **"Milestonelar açık ve oynanabilir olacak, hi�
 | `0x5301bd` | `75 16` | `eb 48` | Görsel: Safehouse kart yenilemede kilit dokusunu, render bayrağını ve kilit gösterme çağrısını kökten atlama |
 | `0x547ca7` | `7e 1a` | `eb 1a` | Görsel: Safehouse kart kilit gösterme döngüsünü atlama |
 | `0x547d2f` | `75 79` | `eb 79` | Görsel: Safehouse kartına LOCK dokusu atanmasını atlama |
-| `0x52fe5f` | `7e 15` | `eb 15` | Görsel: Safehouse imleç seçim kartı kilit gösterme döngüsünü atlama |
-| `0x52feec` | `b9 48 ed 18 00 eb 63` | `eb a7 90 90 90 90 90` | Görsel: Safehouse imleç seçim kartına LOCK dokusu atanmasını atlama |
-| `0x52ff6a` | `85 c0 74 1c` | `eb 29 90 90` | Görsel: Safehouse imleç seçim kartı yedek kilit çağrısını atlama |
-| `0x52fef3` | `8a 43 17 84 c0` | `b0 01 90 84 c0` | Görsel: Safehouse imleç seçim kartı gizleme yönlendirmesi |
+| `0x52fee6` | `0f 85 a9 00 00 00` | `e9 aa 00 00 00 90` | Görsel: Safehouse imleç kartı kilit atlama (çökmeyi önleyen ileri yönde jmp 0x52ff95) |
 | `0x52f55b` | `75 0f` | `eb 0f` | Görsel: Blacklist menüsü kilit göstermeyi atlama |
 | `0x51fdba` | `8a 47 17 84 c0 5e 74 11` | `b0 01 90 84 c0 5e 90 90` | Görsel: Genel Milestone kilit gizleme |
 | `0x51fdd7` | `e8 b4 ce fc ff` | `e8 e4 4e ff ff` | Görsel: Detay ekranı kilit gizleme çağrısı |
